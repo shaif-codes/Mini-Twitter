@@ -11,6 +11,7 @@ const tweet = require("./routes/tweet");
 const likeCount = require("./routes/likeCount");
 const comments = require("./routes/comments");
 const logout = require("./routes/logout");
+// const timeline = require("./routes/timeline");
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use('/tweet', tweet);
 app.use('/likeCount', likeCount);
 app.use('/comments', comments);
 app.use('/logout', logout);
+// app.use('/timeline', timeline);
 
 
 app.listen(port, () => {

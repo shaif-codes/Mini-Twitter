@@ -5,7 +5,7 @@ const Tweet = require("../models/Tweets")
 const mongoose = require("mongoose")
 
 router.post("/", async (req, res) => {
-    console.log(req.body)
+    // console.log(req.body)
     try {
         const tweet = await Tweet.findById(req.body.tweetId);
 

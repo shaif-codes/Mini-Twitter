@@ -6,14 +6,14 @@ const bycrypt = require("bcrypt")
 
 router.post("/", async (req, res) => {
     const token = req.header("Authorization")?.split(" ")[1];
-    console.log(token);
+    // console.log(token);
     // const token = req.header("Authorization") && req.header("Authorization").split(" ")[1];
     if (!token) {
         return res.status(401).send("Access denied");
     }
     try {
         const blackListToken = await User.findOne({ _id: req.user._id });
-        console.log("removing toke: ", blackListToken)
+        // console.log("removing toke: ", blackListToken)
         if(!blackListToken){
             return res.status(401).send("You have been logged out. Please login again.");
         }
