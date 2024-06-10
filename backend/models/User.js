@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
         match: [/.+\@.+\..+/, "Please enter a valid email address"]
     },
     phone: {
-        type: Number,
+        type: String,
         required: true,
         validate: {
             validator: function(v) {
@@ -34,7 +34,6 @@ const userSchema = new mongoose.Schema({
     },
     dob: {
         type: Date,
-        required: true
     },
     doj: {
         type: Date,

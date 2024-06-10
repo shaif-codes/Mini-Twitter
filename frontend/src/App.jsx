@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import GlobalStyles from './styles/GlobalStyles';
+import LandingPage from './components/LandingPage';
+import SignUpPopover from './components/SignUpPopover';
+import LoginPopover from './components/loginPopover';
+import HomePage from './components/HomePage';
+import CreatePostPopover from './components/CreatePostComponent';
+import Explore from './components/Explore';
+import Profile from './components/Profile';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [showSignUp, setShowSignUp] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showHomePage, setShowHomePage] = useState(false);
+  // const 
+  
+  const handlePopUp = () => {
+    setShowSignUp(true);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      <GlobalStyles />
+      <Routes>
+        <Route path="/" element={<LandingPage onShowSignUp={() => setShowSignUp(true)} />} />
+        <Route path="/signup" element={<SignUpPopover />}/>
+        <Route path="/login" element={<LoginPopover />}/>
+        <Route path="/home" element={<HomePage />}/>
+        <Route path="/createPost" element={<CreatePostPopover />}/>
+        <Route path="/explore" element={<Explore />}/>
+        <Route path="/profile" element={<Profile/>} />
+      </Routes>
+      {/* {showSignUp && <SignUpPopover onClose={() => setShowSignUp(false)} />} */}
+    </Router>
+  );
+};
 
-export default App
+export default App;

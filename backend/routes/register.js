@@ -12,13 +12,14 @@ router.post('/', async (req, res) => {
             password,
             name,
             email,
-            phone,
-            dob,
+            phone
+            // dob? dob : null,
         });
 
         await newUser.save();
         res.status(201).send("User registered successfully");
     } catch (err) {
+        console.log(err);
         res.status(400).send(err.message);
     }
 });
