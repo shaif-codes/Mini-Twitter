@@ -24,13 +24,18 @@ const Popover = styled.div`
 const SignUpPopover = ({ onClose }) => {
   const [page, setPage] = useState(1);
   const [formData, setFormData] = useState({});
+  const [pageOneData, setPageOneData] = useState({});
 
   const handleNext = (data) => {
     console.log(page);
     setFormData(data);
     setPage(2);
   };
-
+  const handleBack = () => {
+    setPageOneData(formData);
+    // console.log("PageOne Data",pageOneData);
+    setPage(1);
+  };
   const handleSubmit = async (data) => {
     const dummyData = {
       userid: 'testuser',
@@ -74,8 +79,8 @@ const SignUpPopover = ({ onClose }) => {
   return (
     <Overlay>
       <Popover>
-        {page === 1 && <SignUpPageOne onNext={handleNext} onClose={onClose} />}
-        {page === 2 && <SignUpPageTwo onBack={()=>setPage(1)} formData={formData} onSubmit={handleSubmit} />}
+        {page === 1 && <SignUpPageOne onNext={handleNext} pageData={pageOneData} onClose={onClose} />}
+        {page === 2 && <SignUpPageTwo onBack={handleBack} formData={formData} onSubmit={handleSubmit} />}
       </Popover>
     </Overlay>
   );

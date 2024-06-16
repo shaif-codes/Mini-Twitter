@@ -96,13 +96,19 @@ const NextButton = styled.button`
 `;
 
 
-const SignUpPageOne = ({ onNext, onClose }) => {
+const SignUpPageOne = ({ onNext, onClose, pageData }) => {
+  
+  console.log("data from page 1", pageData);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    dob: '',
+    name: pageData.name? pageData.name : '',
+    email: pageData.email? pageData.email : '',
+    phone: pageData.phone? pageData.phone : '',
+    dob: pageData.dob? pageData.dob : '',
   });
+
+  if(pageData.length > 0){
+    setFormData(pageData);
+  }
 
   const [useEmail, setUseEmail] = useState(true);
 
@@ -112,7 +118,7 @@ const SignUpPageOne = ({ onNext, onClose }) => {
           ...prevData,
           [name]: value,
           }));
-        console.log(formData)
+        // console.log(formData)
   };
 
   const isFormValid = () => {
