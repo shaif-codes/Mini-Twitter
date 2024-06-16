@@ -2,7 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import logo from '../assets/images/logo.png';
 import AuthButton from './AuthButton';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import SignUpPopover from './SignUpPopover';
 
 const Container = styled.div`
   display: flex;
@@ -34,6 +35,7 @@ const RightSide = styled.div`
   align-items: center;
   justify-content: center;
   background-color: #000;
+  position: relative;
 
   @media (max-width: 768px) {
     flex: none;
@@ -50,7 +52,7 @@ const Logo = styled.img`
 `;
 
 const Heading = styled.h1`
-  font-size: clamp(48px, 5vw, 85px); /* Dynamic size between 48px and 85px */
+  font-size: clamp(48px, 5vw, 85px);
   margin-bottom: 20px;
 
   @media (max-width: 768px) {
@@ -74,23 +76,35 @@ const Text = styled.p`
   margin: 10px 0;
 `;
 
-const LandingPage = ({ onShowSignUp }) => {
-    return (
-        <Container>
-            <LeftSide>
-                <Logo src={logo} alt="Logo" />
-            </LeftSide>
-            <RightSide>
-                <Heading>Happening now</Heading>
-                <Subheading>Join today.</Subheading>
-                <FormContainer>
-                    <AuthButton redirect={"/signup"} primary>Create account</AuthButton>
-                    <Text>Already have an account?</Text>
-                    <AuthButton redirect={"/login"}>Sign in</AuthButton>
-                </FormContainer>
-            </RightSide>
-        </Container>
-    );
+const LandingPage = () => {
+  const [showSignUp, setShowSignUp] = useState(false);
+
+  const handleShowSignUp = () => {
+    setShowSignUp(!showSignUp);
+    console.log("say hello to twitter");
+  };
+
+  const handleCloseSignUp = () => {
+    setShowSignUp(false);
+  };
+
+  return (
+    <Container>
+      <LeftSide>
+        <Logo src={logo} alt="Logo" />
+      </LeftSide>
+      <RightSide>
+        <Heading>Happening now</Heading>
+        <Subheading>Join today.</Subheading>
+        <FormContainer>
+          <AuthButton onClick={handleShowSignUp} primary>Create account</AuthButton>
+          <Text>Already have an account?</Text>
+          <AuthButton>Sign in</AuthButton>
+        </FormContainer>
+        {showSignUp && <SignUpPopover onClose={handleCloseSignUp} />}
+      </RightSide>
+    </Container>
+  );
 };
 
 export default LandingPage;

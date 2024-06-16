@@ -25,7 +25,6 @@ const App = () => {
       <GlobalStyles />
       <Routes>
         <Route path="/" element={<LandingPage onShowSignUp={() => setShowSignUp(true)} />} />
-        <Route path="/signup" element={<SignUpPopover />}/>
         <Route path="/login" element={<LoginPopover />}/>
         <Route path="/home" element={<HomePage />}/>
         <Route path="/createPost" element={<CreatePostPopover />}/>

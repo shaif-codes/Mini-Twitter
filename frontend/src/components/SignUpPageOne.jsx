@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import logo from '../assets/images/logo.png';
 import { SlCalender } from "react-icons/sl";
+import { RxCross1 } from "react-icons/rx";
 
 const Container = styled.div`
   display: flex;
@@ -9,7 +10,7 @@ const Container = styled.div`
   align-items: center;
   padding: 20px;
   width: 75vw;
-  height: 82vh;
+  height: 85vh;
   max-width: 600px;
   padding: 20px;
   background-color: black;
@@ -17,6 +18,7 @@ const Container = styled.div`
 
 const Group = styled.div`
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     width: 100%;
@@ -94,7 +96,7 @@ const NextButton = styled.button`
 `;
 
 
-const SignUpPageOne = ({ onNext }) => {
+const SignUpPageOne = ({ onNext, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -119,23 +121,15 @@ const SignUpPageOne = ({ onNext }) => {
 
   return (
     <Container>
-        <img src={logo} alt="" width={50}/>
+        <Group>
+          <img src={logo} alt="" width={50}/>
+          <h2 onClick={onClose} style={{position: "relative", left: "40%", top: "10%"}}><RxCross1/></h2>
+        </Group>
       <H2>Create your account</H2>
       {/* <Label>Name</Label> */}
       <Input type="text" name="name" value={formData.name} placeholder="enter your name" onChange={handleChange} />
-      {/* <Label>{useEmail ? 'Email' : 'Phone'}</Label> */}
-      {/* <Input
-        type={useEmail ? 'email' : 'tel'}
-        name={useEmail ? 'email' : 'phone'}
-        value={useEmail ? formData.email : formData.phone}
-        placeholder={useEmail ? 'enter email' : 'enter phone'}
-        onChange={handleChange}
-      /> */}
       <Input type="email" name="email" value={formData.email} placeholder="enter your email" onChange={handleChange} />
         <Input type="tel" name="phone" value={formData.phone} placeholder="enter your phone number" onChange={handleChange} />
-      {/* <ToggleButton onClick={() => setUseEmail(!useEmail)}>
-        Use {useEmail ? 'phone' : 'email'} instead
-      </ToggleButton> */}
       <Label>Date of Birth</Label>
       <Message>
         This will not be shown publicly. Confirm your own age, even if this account is for a business, a pet, or something else.

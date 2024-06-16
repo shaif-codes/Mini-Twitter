@@ -13,7 +13,7 @@ const Container = styled.div`
   justify-content: space-between;
   padding: 20px;
   width: 75vw;
-  height: 82vh;
+  height: 85vh;
   max-width: 600px;
   padding: 20px;
   background-color: black;
@@ -103,9 +103,9 @@ const SignUpPageTwo = ({ formData, onSubmit, onBack }) => {
         <Container>
             <Group>
                 <Group style={{"flex-direction":"row", "justify-content": "space-between"}}>
-                <h2 onClick={onBack} style={{"align-self":"flex-start"}}><IoArrowBackOutline/></h2>
-                <img src={logo} height={50} alt="logo" />
-                <h2 onClick={()=>window.location.href="/"}><RxCross1/></h2>
+                    <h2 onClick={onBack} style={{"align-self":"flex-start"}}><IoArrowBackOutline/></h2>
+                    <img src={logo} height={50} alt="logo" />
+                    <h2 onClick={()=>window.location.href="/"}><RxCross1/></h2>
                 </Group>
                 <h2>Set your password</h2>
                 <PasswordContainer>

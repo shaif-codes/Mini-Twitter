@@ -22,7 +22,7 @@ const Popover = styled.div`
 `;
 
 const SignUpPopover = ({ onClose }) => {
-  const [page, setPage] = useState(2);
+  const [page, setPage] = useState(1);
   const [formData, setFormData] = useState({});
 
   const handleNext = (data) => {
@@ -74,8 +74,8 @@ const SignUpPopover = ({ onClose }) => {
   return (
     <Overlay>
       <Popover>
-        {page === 1 && <SignUpPageOne onNext={handleNext} />}
-        {page === 2 && <SignUpPageTwo onBack={()=>setPage(1)}formData={formData} onSubmit={handleSubmit} />}
+        {page === 1 && <SignUpPageOne onNext={handleNext} onClose={onClose} />}
+        {page === 2 && <SignUpPageTwo onBack={()=>setPage(1)} formData={formData} onSubmit={handleSubmit} />}
       </Popover>
     </Overlay>
   );

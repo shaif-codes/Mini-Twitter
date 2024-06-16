@@ -15,11 +15,16 @@ const Button = styled.button`
   &:hover {
     opacity: 0.9;
   }
+  &:focus {
+    outline: none;
+  }
+  &:active {
+    outline: none;
+  }
 `;
 
-const AuthButton = ({ primary, children, redirect }) => (
-
-  <Button onClick={()=>window.location.href = redirect}primary={primary}>{children}</Button>
+const AuthButton = ({ primary, children, onClick }) => (
+  <Button primary={primary} onClick={onClick}> {children} </Button>
 );
 
 export default AuthButton;
