@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
 import logo from '../assets/images/logo.png';
 import { useNavigate } from 'react-router-dom';
+import { RxCross1 } from 'react-icons/rx';
+import axios from 'axios';
+import Cookie from 'js-cookie';
+import UserContext from '../context/userContext';
 
 const Overlay = styled.div`
   position: fixed;
@@ -14,7 +18,6 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
 `;
-
 
 const Popover = styled.div`
   background: white;
@@ -90,54 +93,75 @@ const SignUpLink = styled.span`
   cursor: pointer;
 `;
 
-const LoginPopover = () => {
-    const [formData, setFormData] = useState({
-        username: '',
-        password: '',
-    });
-    const navigate = useNavigate();
+const LoginPopover = ({ onClose, onToggle }) => {
+  const [formData, setFormData] = useState({
+    userid: '',
+    password: '',
+  });
+  const navigate = useNavigate();
+  const { state, setState } = useContext(UserContext);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-    const handleLogin = () => {
-        // Handle login logic
-    };
+  const handleLogin = async () => {
+    console.log(formData.userid, formData.password);
+    try {
+      const response = await axios.post('/api/login', { userid: formData.userid, password: formData.password });
+      console.log(response.data);
+      if (response.data?.accessToken) {
+        Cookie.set('accessToken', response.data.accessToken);
+        Cookie.set('userid', formData.userid);
+        window.location.href = '/home';
+        // setState(response.data.user);
+        // console.log(state);
+        // rest logic we have to implement
+      } else {
+        console.log('Invalid credentials');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    return (
-        <Overlay>
-            <Popover>
-                <Container>
-                    <img src={logo} alt="" width={50} />
-                    <H2>Enter your password</H2>
-                    <Input
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        placeholder="Username"
-                        onChange={handleChange}
-                    />
-                    <Input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        placeholder="Password"
-                        onChange={handleChange}
-                    />
-                    <LoginButton onClick={handleLogin}>Log in</LoginButton>
-                    <SignUpMessage>
-                        Don’t have an account?{' '}
-                        <SignUpLink onClick={() => navigate('/signup')}>Sign up</SignUpLink>
-                    </SignUpMessage>
-                </Container>
-            </Popover>
-        </Overlay>
-    );
+  return (
+    <Overlay>
+      <Popover>
+        <Container>
+          <Group>
+            <img src={logo} alt="" width={50} />
+            <h2 onClick={onClose} title="close" style={{ position: 'relative', left: '40%', top: '10%' }}>
+              <RxCross1 />
+            </h2>
+          </Group>
+          <H2>Enter your password</H2>
+          <Input
+            type="text"
+            name="userid"
+            value={formData.userid}
+            placeholder="userid"
+            onChange={handleChange}
+          />
+          <Input
+            type="password"
+            name="password"
+            value={formData.password}
+            placeholder="Password"
+            onChange={handleChange}
+          />
+          <LoginButton onClick={handleLogin}>Log in</LoginButton>
+          <SignUpMessage>
+            Don’t have an account? <SignUpLink onClick={onToggle}>Sign up</SignUpLink>
+          </SignUpMessage>
+        </Container>
+      </Popover>
+    </Overlay>
+  );
 };
 
 export default LoginPopover;

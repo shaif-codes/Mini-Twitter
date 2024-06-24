@@ -31,7 +31,9 @@ router.post("/", async (req, res) => {
         const encryptedToken = await bcrypt.hash(token, 10);
         user.accessToken = encryptedToken;
         user.save();
-        res.send(token);
+        // res.json({user, accessToken: token})
+        res.json({accessToken: token})
+        // res.send(token);
     } 
     catch (err) {
         res.status(400).send(err.message)

@@ -12,7 +12,7 @@ const tweet = require("./routes/tweet");
 const likeCount = require("./routes/likeCount");
 const comments = require("./routes/comments");
 const logout = require("./routes/logout");
-
+const debounce = require("./routes/debounce");
 
 dotenv.config();
 
@@ -23,9 +23,11 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
+//paths that do not require token verification
+const paths = ['/register', '/login', '/debounce/userid', '/debounce/email', '/debounce/phone'];
 
 app.use((req, res, next) => {
-    if (req.path === '/register' || req.path === '/login') {
+    if (paths.includes(req.path)) {
         next();
     } else {
         verifyToken(req, res, next);
@@ -48,6 +50,8 @@ app.use('/tweet', tweet);
 app.use('/likeCount', likeCount);
 app.use('/comments', comments);
 app.use('/logout', logout);
+app.use('/debounce', debounce);
+app.use('/verifyToken', require('./routes/validToken'));
 // app.use('/timeline', timeline);
 
 

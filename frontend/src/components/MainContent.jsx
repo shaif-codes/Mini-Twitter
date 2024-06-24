@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import profile from '../assets/images/sampleProfile.png';
 import PostComponent from './PostComponent';
 import { redirect } from 'react-router-dom';
+import UserContext from '../context/userContext';
+import Cookie from 'js-cookie';
+import axios from 'axios';
 
 const ContentContainer = styled.div`
   display: flex;
@@ -107,41 +110,85 @@ const MainContent = () => {
     textArea.style.height = textArea.scrollHeight + 'px';
   }, [text]);
 
-  const posts = [
-    {
-      id: 1,
-      name: 'John Doe',
-      username: 'johndoe',
-      date: 'June 7, 2024',
-      content: 'This is a sample post content.',
-    },
-    {
-        id: 1,
-        name: 'John Doe',
-        username: 'johndoe',
-        date: 'June 7, 2024',
-        content: 'This is a sample post content.',
-      },
-      {
-        id: 1,
-        name: 'John Doe',
-        username: 'johndoe',
-        date: 'June 7, 2024',
-        content: 'This is a sample post content.',
-      },
-      {
-        id: 1,
-        name: 'John Doe',
-        username: 'johndoe',
-        date: 'June 7, 2024',
-        content: 'This is a sample post content.',
-      },
-    // Add more posts here
-  ];
-  
+  const [tweets, setTweets] = useState([]);
+  const user = useContext(UserContext);
+  const token = Cookie.get('accessToken'); // Get token from cookie
+  // console.log(token);
+  useEffect(() => {
+    const fetchTweets = async () => {
+      try {
+        const response = await axios.get('/api/tweet', { headers: { Authorization: `Bearer ${token}` } });
+        if(response.data){
+          console.log(response.data);
+          setTweets(response.data);
+        }
+      } 
+      catch (error) {
+        console.error(error);
+      }
+    };
+    fetchTweets();
+    console.log(tweets);
+  }, [tweets]);
+  // const posts = [
+  //   {
+  //     id: 1,
+  //     name: 'John Doe',
+  //     username: 'johndoe',
+  //     date: 'June 7, 2024',
+  //     content: 'This is a sample post content.',
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'John Doe',
+  //     username: 'johndoe',
+  //     date: 'June 7, 2024',
+  //     content: 'This is a sample post content.',
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'John Doe',
+  //     username: 'johndoe',
+  //     date: 'June 7, 2024',
+  //     content: 'This is a sample post content.',
+  //   },
+  //   {
+  //     id: 4,
+  //     name: 'John Doe',
+  //     username: 'johndoe',
+  //     date: 'June 7, 2024',
+  //     content: 'This is a sample post content.',
+  //   },
+  //   // Add more posts here
+  // ];
+
   const handleTextChange = (e) => {
     setText(e.target.value);
   };
+
+  function formatDate(dateStr) {
+    const dateObj = new Date(dateStr);
+    const now = new Date();
+  
+    const diffInSeconds = Math.floor((now - dateObj) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+  
+    if (diffInMinutes < 1) {
+      return `few seconds`;
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes} minutes`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hours`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays} days`;
+    } else {
+      const options = { day: '2-digit', month: 'short', year: '2-digit' };
+      return dateObj.toLocaleDateString('en-GB', options).replace(/ /g, ' ');
+    }
+  }
+  
 
   return (
     <ContentContainer>
@@ -158,8 +205,16 @@ const MainContent = () => {
           <PostButton>Post</PostButton>
         </ProfileAndInputContainer>
       </PostSection>
-      {posts.map((post) => (
-        <PostComponent key={post.id} post={post} />
+      {tweets.map((post) => (
+        <PostComponent key={post.id} 
+          post={
+            {
+              id: post._id, 
+              name: post.tweetBy.name, 
+              username: post.tweetBy.userid, 
+              date: formatDate(post.createdAt.toString()), 
+              content: post.tweet}
+          } />
       ))}
     </ContentContainer>
   );

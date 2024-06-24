@@ -2,9 +2,9 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Button = styled.button`
-  background-color: ${props => props.primary ? '#1DA1F2' : 'transparent'};
-  color: ${props => props.primary ? '#fff' : '#1DA1F2'};
-  border: ${props => props.primary ? 'none' : '1px solid #1DA1F2'};
+  background-color: ${props => props.$primary ? '#1DA1F2' : 'transparent'};
+  color: ${props => props.$primary ? '#fff' : '#1DA1F2'};
+  border: ${props => props.$primary ? 'none' : '1px solid #1DA1F2'};
   border-radius: 30px;
   padding: 10px 20px;
   font-size: 16px;
@@ -24,7 +24,7 @@ const Button = styled.button`
 `;
 
 const AuthButton = ({ primary, children, onClick }) => (
-  <Button primary={primary} onClick={onClick}> {children} </Button>
+  <Button $primary={primary} onClick={onClick}> {children} </Button>
 );
 
 export default AuthButton;

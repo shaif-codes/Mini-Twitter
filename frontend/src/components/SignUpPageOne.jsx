@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import logo from '../assets/images/logo.png';
 import { SlCalender } from "react-icons/sl";
 import { RxCross1 } from "react-icons/rx";
+import useDebounce from '../hooks/useDebounce';
+import axios from 'axios';
 
 const Container = styled.div`
   display: flex;
@@ -17,18 +19,17 @@ const Container = styled.div`
 `;
 
 const Group = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 `;
 
 const H2 = styled.h2`
-    color: white;
-    font-size: 35px;
+  color: white;
+  font-size: 35px;
 `;
-
 
 const Input = styled.input`
   padding: 10px;
@@ -36,22 +37,17 @@ const Input = styled.input`
   width: 75%;
   color: white;
   background-color: black;
-  border:none;
+  border: none;
   border: 1px solid #ccc;
   border-radius: 5px;
   margin: 15px 20px;
   &:active {
     border: 1px solid #1a89d4;
   }
-    &:focus {
-        border: 1px solid #1a89d4;
-    }
+  &:focus {
+    border: 1px solid #1a89d4;
+  }
 `;
-
-
-
-
-
 
 const Label = styled.label`
   margin: 10px 0;
@@ -61,9 +57,10 @@ const Label = styled.label`
 
 const Message = styled.p`
   font-size: 12px;
-  algin-self: center;
+  align-self: center;
   width: 75%;
   color: grey;
+  margin-top: -10px
 `;
 
 const ToggleButton = styled.button`
@@ -76,72 +73,213 @@ const ToggleButton = styled.button`
 `;
 
 const NextButton = styled.button`
-    color: black;
-    border: none;
-    border-radius: 30px;
-    backckgroud-color: #d7dbdc;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 10px 0;
-    width: 80%;
-    border-radius: 25px;
-    &:hover {
-        opacity: 0.9;
-    }
-    &:disabled {
-        background-color: #787a7a;
-    }
-
+  color: black;
+  border: none;
+  border-radius: 30px;
+  background-color: #fdfdfd;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 10px 0;
+  width: 80%;
+  border-radius: 25px;
+  &:hover {
+    opacity: 0.9;
+  }
+  &:disabled {
+    background-color: #787a7a;
+  }
 `;
 
 
+
+// useEffect(async () => {
+//   if (debounceEmail) {
+//     const response = await axios('/api/debounce/email', {email: debounceEmail});
+//     if (response.ok) {
+//       setErrors((prevErrors) => ({
+//         ...prevErrors,
+//         email: 'Email already exists',
+//       }));
+//     }
+//   }
+// }, [debounceEmail]);
+
 const SignUpPageOne = ({ onNext, onClose, pageData }) => {
-  
-  console.log("data from page 1", pageData);
   const [formData, setFormData] = useState({
-    name: pageData.name? pageData.name : '',
-    email: pageData.email? pageData.email : '',
-    phone: pageData.phone? pageData.phone : '',
-    dob: pageData.dob? pageData.dob : '',
+    name: '',
+    email: '',
+    phone: '',
+    dob: '',
+    ...pageData,
   });
 
-  if(pageData.length > 0){
-    setFormData(pageData);
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    dob: '',
+    phone: '',
+  });
+
+const debounceEmail = useDebounce(formData.email, 500);
+
+useEffect(() =>{
+  const checkAvailableEmail = async (debounceEmail) =>{
+    if(debounceEmail){
+      const response = await axios.post('/api/debounce/email', {email: debounceEmail});
+      if(response.data?.email){
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          email: 'Email already exists',
+        }));
+      }
+      else{
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          email: '',
+        }));
+      }
+    }
   }
 
-  const [useEmail, setUseEmail] = useState(true);
+  checkAvailableEmail(debounceEmail);
+  
+}, [debounceEmail])
 
-  const handleChange = (e) => {
-      const { name, value } = e.target;
-      setFormData((prevData) => ({
-          ...prevData,
-          [name]: value,
-          }));
-        // console.log(formData)
+const debouncePhone = useDebounce(formData.phone, 500);
+useEffect(() => {
+  const checkAvailablePhone = async (debouncePhone) => {
+    if(debouncePhone){
+      const response = await axios.post('/api/debounce/phone', {phone: debouncePhone});
+      if(response.data?.phone){
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          phone: 'Phone number already exists',
+        }));
+      }
+      else{
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          phone: '',
+        }));
+      }
+    }
+  };
+  checkAvailablePhone(debouncePhone);
+}, [debouncePhone]);
+
+// useEffect(async()=>{
+//   if(debounceEmail){
+//     const response = await axios('/api/debounce/email', {email: debounceEmail});
+//     if(response.ok){
+//       setErrors((prevErrors) => ({
+//         ...prevErrors,
+//         email: 'Email already exists',
+//       }));
+//     }
+//     else{
+//       setErrors((prevErrors) => ({
+//         ...prevErrors,
+//         email: '',
+//       }));
+//     }
+//   }
+// }, [debounceEmail]);
+
+  const validate = () => {
+    const newErrors = {
+      name: '',
+      email: '',
+      dob: '',
+    };
+
+    if (!formData.name) {
+      newErrors.name = 'Name is required';
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.name)) {
+      newErrors.name = 'Name can only contain letters and spaces';
+    }
+
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!formData.dob) {
+      newErrors.dob = 'Date of birth is required';
+    } else if (new Date(formData.dob) >= new Date()) {
+      newErrors.dob = 'Date of birth must be in the past';
+    }
+    if(formData.phone && !/^[0-9]{10}$/.test(formData.phone)){
+      newErrors.phone = 'Phone number is invalid';
+    }
+    setErrors(newErrors);
+    return !newErrors.name && !newErrors.email && !newErrors.dob;
   };
 
-  const isFormValid = () => {
-    return formData.name && (formData.email || formData.phone) && formData.dob;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleNext = () => {
+    if (validate()) {
+      onNext(formData);
+    }
   };
 
   return (
     <Container>
-        <Group>
-          <img src={logo} alt="" width={50}/>
-          <h2 onClick={onClose} style={{position: "relative", left: "40%", top: "10%"}}><RxCross1/></h2>
-        </Group>
+      <Group>
+        <img src={logo} alt="" width={50} />
+        <h2 onClick={onClose} style={{ position: "relative", left: "40%", top: "10%" }}>
+          <RxCross1 />
+        </h2>
+      </Group>
       <H2>Create your account</H2>
-      {/* <Label>Name</Label> */}
-      <Input type="text" name="name" value={formData.name} placeholder="enter your name" onChange={handleChange} />
-      <Input type="email" name="email" value={formData.email} placeholder="enter your email" onChange={handleChange} />
-        <Input type="tel" name="phone" value={formData.phone} placeholder="enter your phone number" onChange={handleChange} />
+      <Input
+        type="text"
+        name="name"
+        value={formData.name}
+        placeholder="Enter your name"
+        onChange={handleChange}
+        style={{ borderColor: errors.name ? 'red' : '#ccc' }}
+      />
+      {errors.name && <Message style={{ color: 'red'}}>{errors.name}</Message>}
+      <Input
+        type="email"
+        name="email"
+        value={formData.email}
+        placeholder="Enter your email"
+        onChange={handleChange}
+        style={{ borderColor: errors.email ? 'red' : '#ccc' }}
+      />
+      {errors.email && <Message style={{ color: 'red'}}>{errors.email}</Message>}
+      <Input
+        type="tel"
+        name="phone"
+        value={formData.phone}
+        placeholder="Enter your phone number"
+        onChange={handleChange}
+      />
+      {errors.phone && <Message style={{ color: 'red'}}>{errors.phone}</Message>}
       <Label>Date of Birth</Label>
       <Message>
         This will not be shown publicly. Confirm your own age, even if this account is for a business, a pet, or something else.
       </Message>
-      <Input type="date" name="dob" style={{"background-color": "white", "color": "black"}} value={formData.dob} placeholder='enter you date of birth' onChange={handleChange}/>
-      <NextButton disabled={!isFormValid()} onClick={() => onNext(formData)}>
+      <Input
+        type="date"
+        name="dob"
+        style={{ backgroundColor: "white", color: "black", borderColor: errors.dob ? 'red' : '#ccc' }}
+        value={formData.dob}
+        placeholder='Enter your date of birth'
+        onChange={handleChange}
+      />
+      {errors.dob && <Message style={{ color: 'red' }}>{errors.dob}</Message>}
+      <NextButton disabled={errors.name && errors.email && errors.phone && errors.dob} onClick={handleNext}>
         Next
       </NextButton>
     </Container>

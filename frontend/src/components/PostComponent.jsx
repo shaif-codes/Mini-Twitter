@@ -125,7 +125,7 @@ const PostComponent = ({ post }) => {
       </ProfileDetails>
       <PostContent>{post.content}</PostContent>
       <PostActions>
-        <ActionButton liked={liked} onClick={toggleLike}>
+        <ActionButton $liked={liked} onClick={toggleLike}>
           <FaHeart />
         </ActionButton>
         <ActionButton onClick={toggleComments}>

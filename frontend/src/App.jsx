@@ -3,11 +3,12 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import GlobalStyles from './styles/GlobalStyles';
 import LandingPage from './components/LandingPage';
 import SignUpPopover from './components/SignUpPopover';
-import LoginPopover from './components/loginPopover';
+// import LoginPopover from './components/loginPopover';
 import HomePage from './components/HomePage';
 import CreatePostPopover from './components/CreatePostComponent';
 import Explore from './components/Explore';
 import Profile from './components/Profile';
+import PracticeForm from './components/practiceForm';
 
 const App = () => {
   const [showSignUp, setShowSignUp] = useState(true);
@@ -25,7 +26,8 @@ const App = () => {
       <GlobalStyles />
       <Routes>
         <Route path="/" element={<LandingPage onShowSignUp={() => setShowSignUp(true)} />} />
-        <Route path="/login" element={<LoginPopover />}/>
+        {/* <Route path="/pra" element={<PracticeForm />}/> */}
+        {/* <Route path="/login" element={<LoginPopover />}/> */}
         <Route path="/home" element={<HomePage />}/>
         <Route path="/createPost" element={<CreatePostPopover />}/>
         <Route path="/explore" element={<Explore />}/>

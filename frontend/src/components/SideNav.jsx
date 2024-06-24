@@ -1,10 +1,13 @@
-import React from 'react';
+import React, {useContext, useEffect} from 'react';
 import styled from 'styled-components';
 import { FaHome, FaUser, FaSearch } from 'react-icons/fa';
 import { IoMdCreate } from 'react-icons/io';
 import logo from '../assets/images/logo.png';
 import profile from '../assets/images/sampleProfile.png';
 import { Navigate } from 'react-router-dom';
+import UserContext from '../context/userContext';
+import axios from 'axios';
+import Cookie from 'js-cookie';
 
 const NavContainer = styled.div`
   display: flex;
@@ -139,6 +142,11 @@ const ProfileId = styled.div`
 `;
 
 const SideNav = () => {
+  const {state, setState} = useContext(UserContext);
+//  useEffect(()=>{
+//     console.log(state);
+//  }, [state])
+ 
   return (
     <NavContainer>
       <div>
@@ -173,8 +181,8 @@ const SideNav = () => {
       <ProfileSection>
         <ProfileImage src={profile} alt="profile" />
         <ProfileDetails>
-          <ProfileName>faylor Swift</ProfileName>
-          <ProfileId>@FSwift20260</ProfileId>
+          <ProfileName>{state.name}</ProfileName>
+          <ProfileId>{state.userid}</ProfileId>
         </ProfileDetails>
         <p style={{fontWeight: "35px", fontSize: "25px", margin:"0px", marginLeft: "30px", }}> ...</p>
       </ProfileSection>

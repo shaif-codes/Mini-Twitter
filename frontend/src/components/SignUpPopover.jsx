@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import SignUpPageOne from './SignUpPageOne';
 import SignUpPageTwo from './SignUpPageTwo';
+import axios from 'axios';
 
 const Overlay = styled.div`
   position: fixed;
@@ -25,42 +26,42 @@ const SignUpPopover = ({ onClose }) => {
   const [page, setPage] = useState(1);
   const [formData, setFormData] = useState({});
   const [pageOneData, setPageOneData] = useState({});
+  const [pageTwoData, setPageTwoData] = useState({});
 
   const handleNext = (data) => {
-    console.log(page);
+    // console.log(page);
     setFormData(data);
     setPage(2);
   };
   const handleBack = () => {
     setPageOneData(formData);
-    // console.log("PageOne Data",pageOneData);
+
+    // console.log("PageOne Data",formData);
     setPage(1);
   };
   const handleSubmit = async (data) => {
-    const dummyData = {
-      userid: 'testuser',
-      password: 'password',
-      name: 'Test User',
-      email: 'test@gmial.com',
-      phone: '1234567890',
-      dob: '01/01/2000',
-      confirmPassword: 'password',
+    console.log(data);
+    const formatedData = {
+      userid: data.userId,
+      password: data.password,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      dob: new Date(data.dob),
+      confirmPassword: data.confirmPassword,
     };
-    console.log('Form Data:', dummyData);
+    
+    console.log('Form Data:', formatedData);
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dummyData),
-      });
+      const response = await axios.post('/api/register', formatedData);
+      console.log('Response:', response);
   
-      if (response.ok) {
+      if (response.status === 201) {
         console.log('User registered successfully');
-      } else {
+      } 
+      else {
         console.error('Failed to register user');
-        const text = await response.text();
+        const text = await response.text;
         try {
           const errorData = JSON.parse(text);
           console.error('Error details:', errorData);
@@ -71,8 +72,8 @@ const SignUpPopover = ({ onClose }) => {
     } catch (error) {
       console.error('Error during fetch:', error);
     }
-  
-    // onClose();
+    
+    onClose();
   };
   
 
