@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import logo from '../assets/images/logo.png';
 import AuthButton from './AuthButton';
 import SignUpPopover from './SignUpPopover';
-import LoginPopover from './LoginPopover';
+import LoginPopover from './loginPopover';
 import UserState from '../context/UserState';
 
 const Container = styled.div`
