@@ -3,9 +3,10 @@ import UserContext from './userContext';
 
 const UserState = ({ children }) => {
   const [state, setState] = useState({});
+  const [tweetState, setTweetState] = useState({});
 
   return (
-    <UserContext.Provider value={{ state, setState }}>
+    <UserContext.Provider value={{ state, setState, tweetState, setTweetState }}>
       {children}
     </UserContext.Provider>
   );

@@ -6,6 +6,7 @@ import { redirect } from 'react-router-dom';
 import UserContext from '../context/userContext';
 import Cookie from 'js-cookie';
 import axios from 'axios';
+import formatDate from '../hooks/formatDate';
 
 const ContentContainer = styled.div`
   display: flex;
@@ -111,16 +112,17 @@ const MainContent = () => {
   }, [text]);
 
   const [tweets, setTweets] = useState([]);
-  const user = useContext(UserContext);
+  const { tweetState, setTweetState } = useContext(UserContext);
+
   const token = Cookie.get('accessToken'); // Get token from cookie
-  // console.log(token);
+
   useEffect(() => {
     const fetchTweets = async () => {
       try {
         const response = await axios.get('/api/tweet', { headers: { Authorization: `Bearer ${token}` } });
         if(response.data){
-          console.log(response.data);
           setTweets(response.data);
+          setTweetState(response.data);
         }
       } 
       catch (error) {
@@ -128,66 +130,19 @@ const MainContent = () => {
       }
     };
     fetchTweets();
-    console.log(tweets);
-  }, [tweets]);
-  // const posts = [
-  //   {
-  //     id: 1,
-  //     name: 'John Doe',
-  //     username: 'johndoe',
-  //     date: 'June 7, 2024',
-  //     content: 'This is a sample post content.',
-  //   },
-  //   {
-  //     id: 2,
-  //     name: 'John Doe',
-  //     username: 'johndoe',
-  //     date: 'June 7, 2024',
-  //     content: 'This is a sample post content.',
-  //   },
-  //   {
-  //     id: 3,
-  //     name: 'John Doe',
-  //     username: 'johndoe',
-  //     date: 'June 7, 2024',
-  //     content: 'This is a sample post content.',
-  //   },
-  //   {
-  //     id: 4,
-  //     name: 'John Doe',
-  //     username: 'johndoe',
-  //     date: 'June 7, 2024',
-  //     content: 'This is a sample post content.',
-  //   },
-  //   // Add more posts here
-  // ];
+    // console.log(tweets);
+  }, []);
+
+  // useEffect(()=>{
+  //   console.log(tweetState)
+  // }, [tweetState])
+ 
 
   const handleTextChange = (e) => {
     setText(e.target.value);
   };
 
-  function formatDate(dateStr) {
-    const dateObj = new Date(dateStr);
-    const now = new Date();
   
-    const diffInSeconds = Math.floor((now - dateObj) / 1000);
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    const diffInDays = Math.floor(diffInHours / 24);
-  
-    if (diffInMinutes < 1) {
-      return `few seconds`;
-    } else if (diffInMinutes < 60) {
-      return `${diffInMinutes} minutes`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours} hours`;
-    } else if (diffInDays < 7) {
-      return `${diffInDays} days`;
-    } else {
-      const options = { day: '2-digit', month: 'short', year: '2-digit' };
-      return dateObj.toLocaleDateString('en-GB', options).replace(/ /g, ' ');
-    }
-  }
   
 
   return (
@@ -205,8 +160,9 @@ const MainContent = () => {
           <PostButton>Post</PostButton>
         </ProfileAndInputContainer>
       </PostSection>
-      {tweets.map((post) => (
-        <PostComponent key={post.id} 
+      {
+      tweets.map((post) => (
+        <PostComponent key={post._id} 
           post={
             {
               id: post._id, 

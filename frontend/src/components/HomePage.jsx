@@ -24,11 +24,12 @@ const AppContainer = styled.div`
 const HomePage = () => {
   const [state, setState] = useState({});
 
+  const [tweetState, setTweetState] = useState([]);
+
   //states for toggling between the different components
   const [showHome, setShowHome] = useState(true);
   const [showExplore, setShowExplore] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-
 
   useEffect(() => {
     const token = Cookie.get("accessToken");
@@ -46,7 +47,7 @@ const HomePage = () => {
     };
 
     if (token === undefined || userid === undefined) {
-      console.log("redirecting to login");
+      // console.log("redirecting to login");
       window.location.href = "/";  // Redirect to login page
     } else {
       fetchUserData(token);
@@ -56,10 +57,12 @@ const HomePage = () => {
   
 
   return (
-    <UserContext.Provider value={{ state, setState }}>
+    <UserContext.Provider value={{ state, setState, tweetState, setTweetState }}>
       <AppContainer>
-        <SideNav />
-        <MainContent />
+        <SideNav toggleCtrl={{home: [showHome, setShowHome], explore:[showExplore, setShowExplore], profile: [showProfile, setShowProfile]}} />
+        {showHome && <MainContent />}
+        {showExplore && <Explore/>}
+        {showProfile && <Profile/>}
       </AppContainer>
     </UserContext.Provider>
   );

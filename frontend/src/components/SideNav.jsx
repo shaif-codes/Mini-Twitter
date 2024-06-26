@@ -1,20 +1,17 @@
-import React, {useContext, useEffect} from 'react';
+import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { FaHome, FaUser, FaSearch } from 'react-icons/fa';
 import { IoMdCreate } from 'react-icons/io';
 import logo from '../assets/images/logo.png';
 import profile from '../assets/images/sampleProfile.png';
-import { Navigate } from 'react-router-dom';
 import UserContext from '../context/userContext';
-import axios from 'axios';
-import Cookie from 'js-cookie';
 
 const NavContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 20px;
-  padding-bottom:4%;
+  padding-bottom: 4%;
   width: 250px;
   background-color: black;
   color: white;
@@ -23,7 +20,6 @@ const NavContainer = styled.div`
     width: 80px;
     align-items: center;
     padding: 23px 5px;
-    // padding-top: 20px;
   }
 `;
 
@@ -34,6 +30,8 @@ const NavItem = styled.div`
   margin: 10px 0;
   font-size: 23px;
   cursor: pointer;
+  background-color: ${({ isactive }) => (isactive ? '#1a1a1a' : 'transparent')};
+  border-radius: ${({ isactive }) => (isactive ? '30px' : '0')};
 
   &:hover {
     background-color: #1a1a1a;
@@ -92,15 +90,16 @@ const ProfileSection = styled.div`
   align-items: center;
   cursor: pointer;
   padding: 5px;
-//   background-color: #1a1a1a;
   border-radius: 30px;
+
   @media (max-width: 768px) {
     flex-direction: column;
     padding: 5px;
   }
-    &:hover {
+
+  &:hover {
     background-color: #1a1a1a;
-}
+  }
 `;
 
 const ProfileImage = styled.img`
@@ -120,7 +119,6 @@ const ProfileDetails = styled.div`
   flex-direction: column;
 
   @media (max-width: 768px) {
-    // align-items: center;
     display: none;
   }
 `;
@@ -141,39 +139,55 @@ const ProfileId = styled.div`
   }
 `;
 
-const SideNav = () => {
-  const {state, setState} = useContext(UserContext);
-//  useEffect(()=>{
-//     console.log(state);
-//  }, [state])
- 
+const SideNav = ({ toggleCtrl }) => {
+  const { state } = useContext(UserContext);
+  const [activeItem, setActiveItem] = useState('/home');
+
+  const handleToggleComponent = (ele) => {
+    setActiveItem(ele);
+
+    if (ele === '/home') {
+      toggleCtrl.home[1](true);
+      toggleCtrl.explore[1](false);
+      toggleCtrl.profile[1](false);
+    } else if (ele === '/explore') {
+      toggleCtrl.home[1](false);
+      toggleCtrl.explore[1](true);
+      toggleCtrl.profile[1](false);
+    } else {
+      toggleCtrl.home[1](false);
+      toggleCtrl.explore[1](false);
+      toggleCtrl.profile[1](true);
+    }
+  };
+
   return (
     <NavContainer>
       <div>
-        <NavItem onClick={()=>window.location.href = "/"}>
+        <NavItem onClick={() => handleToggleComponent('/home')}>
           <NavIcon>
             <img src={logo} alt="logo" width={50} />
           </NavIcon>
         </NavItem>
-        <NavItem onClick={()=>window.location.href = "/home"}>
+        <NavItem onClick={() => handleToggleComponent('/home')} isactive={activeItem === '/home'}>
           <NavIcon>
             <FaHome />
           </NavIcon>
           <NavText>Home</NavText>
         </NavItem>
-        <NavItem onClick={()=>window.location.href = "/explore"}>
+        <NavItem onClick={() => handleToggleComponent('/explore')} isactive={activeItem === '/explore'}>
           <NavIcon>
             <FaSearch />
           </NavIcon>
           <NavText>Explore</NavText>
         </NavItem>
-        <NavItem onClick={()=>window.location.href = "/profile"}>
+        <NavItem onClick={() => handleToggleComponent('/profile')} isactive={activeItem === '/profile'}>
           <NavIcon>
             <FaUser />
           </NavIcon>
           <NavText>Profile</NavText>
         </NavItem>
-        <PostButton  onClick={()=>window.location.href = "/createPost"}>
+        <PostButton onClick={() => window.location.href = '/createPost'}>
           <IoMdCreate style={{ marginRight: '10px', fontSize: '23px' }} />
           <NavText>Post</NavText>
         </PostButton>
@@ -182,9 +196,9 @@ const SideNav = () => {
         <ProfileImage src={profile} alt="profile" />
         <ProfileDetails>
           <ProfileName>{state.name}</ProfileName>
-          <ProfileId>{state.userid}</ProfileId>
+          <ProfileId>@{state.userid}</ProfileId>
         </ProfileDetails>
-        <p style={{fontWeight: "35px", fontSize: "25px", margin:"0px", marginLeft: "30px", }}> ...</p>
+        <p style={{ fontWeight: '35px', fontSize: '25px', margin: '0px', marginLeft: '30px' }}>...</p>
       </ProfileSection>
     </NavContainer>
   );

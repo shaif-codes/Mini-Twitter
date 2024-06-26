@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import UserContext from '../context/userContext';
 import styled from 'styled-components';
 import { IoMdCreate } from 'react-icons/io';
 import { IoLocationOutline } from "react-icons/io5";
@@ -6,7 +7,8 @@ import { SlCalender } from "react-icons/sl";
 import profilePic from '../assets/images/sampleProfile.png';
 import bannerPic from '../assets/images/banner-placeholder.png';
 import Post from './PostComponent';
-import Explore  from './Explore'; // Reuse Explore styles for followers/following
+import Cookie from 'js-cookie';
+import formatDate from '../hooks/formatDate';
 
 const ProfileContainer = styled.div`
   display: flex;
@@ -15,9 +17,17 @@ const ProfileContainer = styled.div`
   color: white;
   padding: 20px;
   padding-top: 0px;
-  width: 95vw;
-  min-height: 100vh;
+  width: 75vw;
+  height: 100vh;
   overflow-y: auto;
+  overflow-y: auto; /* Enable scrolling */
+  scroll-behavior: smooth; /* Smooth scrolling */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+
+  &::-webkit-scrollbar { 
+    display: none;  /* Safari and Chrome */
+  }
 `;
 
 const Banner = styled.div`
@@ -131,88 +141,113 @@ const UnfollowButton = styled(FollowButton)`
 `;
 
 const Profile = () => {
+  const { state, tweetState } = useContext(UserContext);
+  // console.log(state);
+
+  
+
   const [activeTab, setActiveTab] = useState('posts');
-
-  const posts = [
-    {
-      id: 1,
-      content: 'This is a post',
-      createdAt: '2024-06-01',
-        name: 'John Doe',
-        username: 'johndoe',
-        profileImage: profilePic,
-    },
-  ];
-
-  const followers = [
-    {
-      id: 1,
-      name: 'Jane Doe',
-      handle: '@janedoe',
-      followers: 150,
+  const userPosts = tweetState.filter(tweet => tweet.tweetBy._id === state._id);
+  console.log(userPosts);
+  // const posts = [
+  //   {
+  //     id: 1,
+  //     content: 'This is a post',
+  //     createdAt: '2024-06-01',
+  //       name: 'John Doe',
+  //       username: 'johndoe',
+  //       profileImage: profilePic,
+  //   },
+  // ];
+  const followers = state.followers.map(follower => {
+    return {
+      id: follower._id,
+      name: follower.name,
+      handle: follower.userid,
+      followers: follower.followers.length,
       profileImage: profilePic,
-    },
-    {
-        id: 2,
-        name: 'Jane Doe',
-        handle: '@janedoe',
-        followers: 150,
-        profileImage: profilePic,
-      },
-      {
-        id: 3,
-        name: 'Jane Doe',
-        handle: '@janedoe',
-        followers: 150,
-        profileImage: profilePic,
-      },
-  ];
+    };
+  }
+  );
+  // const followers = [
+  //   {
+  //     id: 1,
+  //     name: 'Jane Doe',
+  //     handle: '@janedoe',
+  //     followers: 150,
+  //     profileImage: profilePic,
+  //   },
+  //   {
+  //       id: 2,
+  //       name: 'Jane Doe',
+  //       handle: '@janedoe',
+  //       followers: 150,
+  //       profileImage: profilePic,
+  //     },
+  //     {
+  //       id: 3,
+  //       name: 'Jane Doe',
+  //       handle: '@janedoe',
+  //       followers: 150,
+  //       profileImage: profilePic,
+  //     },
+  // ];
 
-  const following = [
-    {
-      id: 1,
-      name: 'Jack Smith',
-      handle: '@jacksmith',
-      followers: 200,
+  const following = state.following.map(following => {
+    return {
+      id: following._id,
+      name: following.name,
+      handle: following.userid,
+      followers: following.followers.length,
       profileImage: profilePic,
-    },
-    {
-        id: 1,
-        name: 'Jack Smith',
-        handle: '@jacksmith',
-        followers: 200,
-        profileImage: profilePic,
-      },
-      {
-        id: 1,
-        name: 'Jack Smith',
-        handle: '@jacksmith',
-        followers: 200,
-        profileImage: profilePic,
-      },
-  ];
+    }
+  }
+  );
+  // const following = [
+  //   {
+  //     id: 1,
+  //     name: 'Jack Smith',
+  //     handle: '@jacksmith',
+  //     followers: 200,
+  //     profileImage: profilePic,
+  //   },
+  //   {
+  //       id: 2,
+  //       name: 'Jack Smith',
+  //       handle: '@jacksmith',
+  //       followers: 200,
+  //       profileImage: profilePic,
+  //     },
+  //     {
+  //       id: 3,
+  //       name: 'Jack Smith',
+  //       handle: '@jacksmith',
+  //       followers: 200,
+  //       profileImage: profilePic,
+  //     },
+  // ];
 
 
   return (
     <ProfileContainer>
-      <Banner />
+      <Banner/>
       <ProfileDetails>
         <ProfileImage src={profilePic} alt="Profile" />
-        <UserName>faylor Swift</UserName>
-        <UserHandle>@FSwift20260</UserHandle>
+        <UserName>{state.name}</UserName>
+        <UserHandle>@{state.userid}</UserHandle>
         <UserBio>Life is a lesson, but what beyond death?</UserBio>
         <UserStats>
           <Stat>
             <IoLocationOutline/> <pre> Earth </pre>
           </Stat>
           <Stat>
-            <SlCalender/><pre> Joined June 2024 </pre> 
+            <SlCalender/><pre> Joined {formatDate(state.doj.toString())} </pre> 
           </Stat>
           <Stat>
-            <strong>2 </strong><pre> Following </pre>
+            <strong> {state.following.length} </strong><pre> Following </pre>
           </Stat>
           <Stat>
-            <strong>0 </strong> <pre> Followers </pre>
+            <strong>{state.followers.length} </strong> <pre> Followers </pre>
           </Stat>
         </UserStats>
         <button>Edit profile</button>
@@ -223,8 +258,13 @@ const Profile = () => {
         <Tab onClick={() => setActiveTab('following')}>Following</Tab>
       </TabContainer>
       <ContentSection>
-        {activeTab === 'posts' && posts.map(post => (
-          <Post key={post.id} post={post} />
+        {activeTab === 'posts' && userPosts.map(post => (
+          <Post key={post._id} post={
+            {id: post._id, 
+            name: post.tweetBy.name, 
+            username: post.tweetBy.userid, 
+            date: formatDate(post.createdAt.toString()), 
+            content: post.tweet}} />
         ))}
         {activeTab === 'followers' && followers.map(user => (
           <UserCard key={user.id}>

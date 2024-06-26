@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import profile from '../assets/images/sampleProfile.png';
+import UserContext from '../context/userContext';
 
 const ExploreContainer = styled.div`
   display: flex;
@@ -97,6 +98,8 @@ const Explore = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const { state } = useContext(UserContext);
+  // console.log(state);
 
   useEffect(() => {
     // Fetch most followed users initially
