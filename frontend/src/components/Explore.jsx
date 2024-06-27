@@ -122,7 +122,7 @@ const Explore = () => {
       setFilteredUsers(users);
     } else {
       const results = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.handle.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredUsers(results);
     }
