@@ -26,6 +26,11 @@ const ContentContainer = styled.div`
   &::-webkit-scrollbar { 
     display: none;  /* Safari and Chrome */
   }
+
+  @media (max-width: 768px) {
+    width: 80vw;
+    padding: 10px;
+  }
 `;
 
 const PostSection = styled.div`
@@ -35,6 +40,10 @@ const PostSection = styled.div`
   padding: 25px;
   border: 1px solid #253341;
   // border-bottom: none;
+
+  @media (max-width: 768px) {
+    padding: 15px;
+  }
 `;
 
 const ProfileAndInputContainer = styled.div`
@@ -47,7 +56,20 @@ const ProfileAndInputContainer = styled.div`
   background-color: black;
   z-index: 1;
   padding-top: 20px; /* Add padding to compensate for sticky position */
+
+  @media (max-width: 768px) {
+    padding-top: 10px;
+    margin-bottom: 10px;
+    width: 72%;
+  }
 `;
+
+const InputAndButtonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
 
 const ProfileImage = styled.img`
   width: 50px;
@@ -56,6 +78,8 @@ const ProfileImage = styled.img`
   margin-bottom: 10px;
 
   @media (max-width: 768px) {
+    width: 40px;
+    height: 40px;
     margin-bottom: 5px;
   }
 `;
@@ -79,6 +103,11 @@ const PostInput = styled.textarea`
   &:hover {
     outline: none;
   }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 8px;
+  }
 `;
 
 const PostButton = styled.button`
@@ -94,12 +123,22 @@ const PostButton = styled.button`
   &:hover {
     opacity: 0.9;
   }
+
+  @media (max-width: 768px) {
+    width: 80px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
 `;
 
 const Post = styled.div`
   background-color: black;
   padding: 15px;
   border: 1px solid #253341;
+
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
 `;
 
 const MainContent = () => {
@@ -121,36 +160,27 @@ const MainContent = () => {
     const fetchTweets = async () => {
       try {
         const response = await axios.get(`${API_URL}/tweet`, { headers: { Authorization: `Bearer ${token}` } });
-        if(response.data){
+        if (response.data) {
           setTweets(response.data);
           setTweetState(response.data);
         }
-      } 
-      catch (error) {
+      } catch (error) {
         console.error(error);
       }
     };
     fetchTweets();
-    // console.log(tweets);
   }, []);
-
-  // useEffect(()=>{
-  //   console.log(tweetState)
-  // }, [tweetState])
- 
 
   const handleTextChange = (e) => {
     setText(e.target.value);
   };
-
-  
-  
 
   return (
     <ContentContainer>
       <PostSection>
         <ProfileAndInputContainer>
           <ProfileImage src={profile} />
+          <InputAndButtonContainer>
           <PostInput
             ref={textAreaRef}
             value={text}
@@ -159,19 +189,20 @@ const MainContent = () => {
             rows={1} // Set initial rows
           />
           <PostButton>Post</PostButton>
+          </InputAndButtonContainer>
         </ProfileAndInputContainer>
       </PostSection>
-      {
-      tweets.map((post) => (
-        <PostComponent key={post._id} 
-          post={
-            {
-              id: post._id, 
-              name: post.tweetBy.name, 
-              username: post.tweetBy.userid, 
-              date: formatDate(post.createdAt.toString()), 
-              content: post.tweet}
-          } />
+      {tweets.map((post) => (
+        <PostComponent
+          key={post._id}
+          post={{
+            id: post._id,
+            name: post.tweetBy.name,
+            username: post.tweetBy.userid,
+            date: formatDate(post.createdAt.toString()),
+            content: post.tweet,
+          }}
+        />
       ))}
     </ContentContainer>
   );

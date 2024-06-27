@@ -36,6 +36,9 @@ const Container = styled.div`
   height: 82vh;
   max-width: 400px;
   background-color: black;
+   @media (max-width: 480px) {
+    height: 50vh;
+  }
 `;
 
 const Group = styled.div`
@@ -48,6 +51,9 @@ const Group = styled.div`
 const H2 = styled.h2`
   color: white;
   font-size: 35px;
+  @media (max-width: 480px) {
+    font-size: 25px;
+  }
 `;
 const PasswordContainer = styled.div`
   display: flex;
@@ -80,8 +86,16 @@ const Input = styled.input`
   border: none;
   border-radius: 5px;
   margin: 0px 20px;
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus,
+  &:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px black inset !important;
+      -webkit-text-fill-color: white !important;
+      transition: background-color 5000s ease-in-out 0s;
   &:active {
     border: 1px solid #1a89d4;
+    background-color: transparent;
   }
   &:focus {
     // border: none;

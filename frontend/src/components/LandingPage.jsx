@@ -12,6 +12,8 @@ const Container = styled.div`
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
+    justify-content: space-evenly;
+    height: 100%;
   }
 `;
 
@@ -52,7 +54,7 @@ const Heading = styled.h1`
   font-size: clamp(48px, 5vw, 85px);
   margin-bottom: 20px;
   @media (max-width: 768px) {
-    font-size: 48px;
+    font-size: 40px;
   }
 `;
 

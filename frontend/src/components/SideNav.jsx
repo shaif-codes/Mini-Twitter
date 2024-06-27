@@ -17,9 +17,11 @@ const NavContainer = styled.div`
   color: white;
 
   @media (max-width: 768px) {
-    width: 80px;
+    width: 15vw;
     align-items: center;
     padding: 23px 5px;
+    height: 100vh;
+    height: 85vh;
   }
 `;
 
@@ -73,8 +75,8 @@ const PostButton = styled.button`
   }
 
   @media (max-width: 768px) {
-    width: 50px;
-    height: 50px;
+    width: 38px;
+    height: 38px;
     padding: 0;
     border-radius: 50%;
     display: flex;
@@ -82,6 +84,7 @@ const PostButton = styled.button`
     font-size: 23px;
     align-items: center;
     justify-content: center;
+    margin-left: 20px;
   }
 `;
 
@@ -138,6 +141,17 @@ const ProfileId = styled.div`
     font-size: 12px;
   }
 `;
+
+const MoreButton = styled.div`
+  font-weight: 35px;
+  font-size: 25px, 
+  margin: 0px;
+  margin-left: 30px; 
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+  
 
 const SideNav = ({ toggleCtrl }) => {
   const { state } = useContext(UserContext);
@@ -198,7 +212,7 @@ const SideNav = ({ toggleCtrl }) => {
           <ProfileName>{state.name}</ProfileName>
           <ProfileId>@{state.userid}</ProfileId>
         </ProfileDetails>
-        <p style={{ fontWeight: '35px', fontSize: '25px', margin: '0px', marginLeft: '30px' }}>...</p>
+        <MoreButton style={{ fontWeight: '35px', fontSize: '25px', margin: '0px', marginLeft: '30px' }}>...</MoreButton>
       </ProfileSection>
     </NavContainer>
   );

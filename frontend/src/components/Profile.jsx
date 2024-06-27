@@ -149,16 +149,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('posts');
   const userPosts = tweetState.filter(tweet => tweet.tweetBy._id === state._id);
   console.log(userPosts);
-  // const posts = [
-  //   {
-  //     id: 1,
-  //     content: 'This is a post',
-  //     createdAt: '2024-06-01',
-  //       name: 'John Doe',
-  //       username: 'johndoe',
-  //       profileImage: profilePic,
-  //   },
-  // ];
+ 
   const followers = state.followers.map(follower => {
     return {
       id: follower._id,
@@ -169,30 +160,7 @@ const Profile = () => {
     };
   }
   );
-  // const followers = [
-  //   {
-  //     id: 1,
-  //     name: 'Jane Doe',
-  //     handle: '@janedoe',
-  //     followers: 150,
-  //     profileImage: profilePic,
-  //   },
-  //   {
-  //       id: 2,
-  //       name: 'Jane Doe',
-  //       handle: '@janedoe',
-  //       followers: 150,
-  //       profileImage: profilePic,
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Jane Doe',
-  //       handle: '@janedoe',
-  //       followers: 150,
-  //       profileImage: profilePic,
-  //     },
-  // ];
-
+  
   const following = state.following.map(following => {
     return {
       id: following._id,
@@ -203,29 +171,7 @@ const Profile = () => {
     }
   }
   );
-  // const following = [
-  //   {
-  //     id: 1,
-  //     name: 'Jack Smith',
-  //     handle: '@jacksmith',
-  //     followers: 200,
-  //     profileImage: profilePic,
-  //   },
-  //   {
-  //       id: 2,
-  //       name: 'Jack Smith',
-  //       handle: '@jacksmith',
-  //       followers: 200,
-  //       profileImage: profilePic,
-  //     },
-  //     {
-  //       id: 3,
-  //       name: 'Jack Smith',
-  //       handle: '@jacksmith',
-  //       followers: 200,
-  //       profileImage: profilePic,
-  //     },
-  // ];
+  
 
 
   return (
