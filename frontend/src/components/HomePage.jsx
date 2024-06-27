@@ -7,6 +7,7 @@ import Profile from './Profile';
 import UserContext from '../context/userContext';
 import Cookie from 'js-cookie';
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const AppContainer = styled.div`
   display: flex;
@@ -37,7 +38,7 @@ const HomePage = () => {
 
     const fetchUserData = async (token) => {
       try {
-        const response = await axios.get("api/profile", { headers: { Authorization: `Bearer ${token}` } });
+        const response = await axios.get(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
         if (response.status === 200) {
           setState(response.data);
         }

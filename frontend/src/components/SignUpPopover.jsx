@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import SignUpPageOne from './SignUpPageOne';
 import SignUpPageTwo from './SignUpPageTwo';
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Overlay = styled.div`
   position: fixed;
@@ -53,7 +54,7 @@ const SignUpPopover = ({ onClose }) => {
     
     console.log('Form Data:', formatedData);
     try {
-      const response = await axios.post('/api/register', formatedData);
+      const response = await axios.post(`${API_URL}/register`, formatedData);
       console.log('Response:', response);
   
       if (response.status === 201) {

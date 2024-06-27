@@ -7,6 +7,7 @@ import UserContext from '../context/userContext';
 import Cookie from 'js-cookie';
 import axios from 'axios';
 import formatDate from '../hooks/formatDate';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ContentContainer = styled.div`
   display: flex;
@@ -119,7 +120,7 @@ const MainContent = () => {
   useEffect(() => {
     const fetchTweets = async () => {
       try {
-        const response = await axios.get('/api/tweet', { headers: { Authorization: `Bearer ${token}` } });
+        const response = await axios.get(`${API_URL}/tweet`, { headers: { Authorization: `Bearer ${token}` } });
         if(response.data){
           setTweets(response.data);
           setTweetState(response.data);

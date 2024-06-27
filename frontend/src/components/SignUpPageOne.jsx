@@ -5,6 +5,7 @@ import { SlCalender } from "react-icons/sl";
 import { RxCross1 } from "react-icons/rx";
 import useDebounce from '../hooks/useDebounce';
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Container = styled.div`
   display: flex;
@@ -126,7 +127,7 @@ const debounceEmail = useDebounce(formData.email, 500);
 useEffect(() =>{
   const checkAvailableEmail = async (debounceEmail) =>{
     if(debounceEmail){
-      const response = await axios.post('/api/debounce/email', {email: debounceEmail});
+      const response = await axios.post(`${API_URL}/debounce/email`, {email: debounceEmail});
       if(response.data?.email){
         setErrors((prevErrors) => ({
           ...prevErrors,
@@ -150,7 +151,7 @@ const debouncePhone = useDebounce(formData.phone, 500);
 useEffect(() => {
   const checkAvailablePhone = async (debouncePhone) => {
     if(debouncePhone){
-      const response = await axios.post('/api/debounce/phone', {phone: debouncePhone});
+      const response = await axios.post(`${API_URL}/debounce/phone`, {phone: debouncePhone});
       if(response.data?.phone){
         setErrors((prevErrors) => ({
           ...prevErrors,

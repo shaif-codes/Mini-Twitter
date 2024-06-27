@@ -6,6 +6,7 @@ import { RxCross1 } from 'react-icons/rx';
 import axios from 'axios';
 import Cookie from 'js-cookie';
 import UserContext from '../context/userContext';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Overlay = styled.div`
   position: fixed;
@@ -112,7 +113,7 @@ const LoginPopover = ({ onClose, onToggle }) => {
   const handleLogin = async () => {
     console.log(formData.userid, formData.password);
     try {
-      const response = await axios.post('/api/login', { userid: formData.userid, password: formData.password });
+      const response = await axios.post(`${API_URL}/login`, { userid: formData.userid, password: formData.password });
       console.log(response.data);
       if (response.data?.accessToken) {
         Cookie.set('accessToken', response.data.accessToken);

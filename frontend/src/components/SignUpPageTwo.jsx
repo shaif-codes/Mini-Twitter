@@ -7,6 +7,7 @@ import AuthButton from './AuthButton';
 import logo from '../assets/images/logo.png';
 import axios from 'axios';
 import useDebounce from '../hooks/useDebounce';  // Import the debounce hook
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Container = styled.div`
   display: flex;
@@ -103,7 +104,7 @@ const SignUpPageTwo = ({ formData, onSubmit, onBack }) => {
     useEffect(() => {
         const checkAvailableUserId = async (debouncedUserId) => {
             try {
-                const response = await axios.post("/api/debounce/userid", { userid: debouncedUserId });
+                const response = await axios.post(`${API_URL}/debounce/userid`, { userid: debouncedUserId });
                 console.log(response.data?.userid);
                 if (response.data?.userid) {
                     setUsernameError('Username is not available');
