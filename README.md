@@ -1,7 +1,13 @@
 
 # Mini-Twitter
 
-Mini-Twitter is a simplified clone of Twitter built with a React frontend and a Node.js backend. This project allows users to create accounts, post updates, follow other users, and explore trending topics.
+Mini-Twitter is a simplified clone of Twitter built with a React frontend and a Node.js backend. This project allows users to create accounts, post updates(working on the frontend part), follow(working on the frontend part) other users(working on the frontend part), and search people in the explore part(working on the frontend part).
+
+## Updates
+
+### June 2024
+- The backend server is now live! You can use it by only building the frontend. 
+- To access the backend API, point your requests to `https://mini-twitter-4o2f.onrender.com`.
 
 ## Features
 
@@ -139,5 +145,3 @@ If you have any questions, feel free to reach out via GitHub issues.
 
 Thank you for checking out Mini-Twitter! We hope you find this project useful and informative.
 ```
-
-This README provides a detailed overview of your project, including setup instructions, features, and more. Make sure to replace placeholders like `<your_mongodb_connection_string>` and `<your_jwt_secret>` with actual values when setting up your environment.
