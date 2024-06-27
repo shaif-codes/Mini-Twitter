@@ -7,6 +7,9 @@ import { RxCross1 } from 'react-icons/rx';
 import axios from 'axios';
 import Cookie from 'js-cookie';
 import UserContext from '../context/userContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Overlay = styled.div`
@@ -36,7 +39,7 @@ const Container = styled.div`
   height: 82vh;
   max-width: 400px;
   background-color: black;
-   @media (max-width: 480px) {
+  @media (max-width: 480px) {
     height: 50vh;
   }
 `;
@@ -101,7 +104,6 @@ const Input = styled.input`
     // border: none;
     outline: none;
   }
-  
 `;
 
 const LoginButton = styled.button`
@@ -142,7 +144,8 @@ const LoginPopover = ({ onClose, onToggle }) => {
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
-};
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -159,15 +162,18 @@ const LoginPopover = ({ onClose, onToggle }) => {
       if (response.data?.accessToken) {
         Cookie.set('accessToken', response.data.accessToken);
         Cookie.set('userid', formData.userid);
+        toast.info('Login successful', {style: {background: "black", color: "white", borderRadius: "10px", padding: "10px"}});
         window.location.href = '/home';
         // setState(response.data.user);
         // console.log(state);
         // rest logic we have to implement
       } else {
         console.log('Invalid credentials');
+        toast.error('Invalid credentials');
       }
     } catch (error) {
       console.log(error);
+      toast.error('Invalid credentials', {style: {background: "black", color: "white", borderRadius: "10px", padding: "10px"}});
     }
   };
 
@@ -183,13 +189,13 @@ const LoginPopover = ({ onClose, onToggle }) => {
           </Group>
           <H2>Enter your password</H2>
           <PasswordContainer>
-          <Input
-            type="text"
-            name="userid"
-            value={formData.userid}
-            placeholder="userid"
-            onChange={handleChange}
-          />
+            <Input
+              type="text"
+              name="userid"
+              value={formData.userid}
+              placeholder="userid"
+              onChange={handleChange}
+            />
           </PasswordContainer>
           <PasswordContainer>
             <Input
@@ -198,11 +204,10 @@ const LoginPopover = ({ onClose, onToggle }) => {
               value={formData.password}
               placeholder="Password"
               onChange={handleChange}
-              style={{border: "none",
-                      margin: "0px 20px"}}
+              style={{ border: "none", margin: "0px 20px" }}
             />
             <ToggleButton onClick={handleTogglePassword}>
-                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </ToggleButton>
           </PasswordContainer>
           <LoginButton onClick={handleLogin}>Log in</LoginButton>
@@ -211,6 +216,7 @@ const LoginPopover = ({ onClose, onToggle }) => {
           </SignUpMessage>
         </Container>
       </Popover>
+      <ToastContainer />
     </Overlay>
   );
 };
