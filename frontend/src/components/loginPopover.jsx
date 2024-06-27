@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
 import logo from '../assets/images/logo.png';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { RxCross1 } from 'react-icons/rx';
 import axios from 'axios';
@@ -48,6 +49,27 @@ const H2 = styled.h2`
   color: white;
   font-size: 35px;
 `;
+const PasswordContainer = styled.div`
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 80%;
+  margin: 10px 0;
+`;
+
+const ToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  &:focus {
+    outline: none;
+  }
+`;
 
 const Input = styled.input`
   padding: 10px;
@@ -56,15 +78,16 @@ const Input = styled.input`
   color: white;
   background-color: black;
   border: none;
-  border: 1px solid #ccc;
   border-radius: 5px;
-  margin: 15px 20px;
+  margin: 0px 20px;
   &:active {
     border: 1px solid #1a89d4;
   }
   &:focus {
-    border: 1px solid #1a89d4;
+    // border: none;
+    outline: none;
   }
+  
 `;
 
 const LoginButton = styled.button`
@@ -99,9 +122,13 @@ const LoginPopover = ({ onClose, onToggle }) => {
     userid: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { state, setState } = useContext(UserContext);
 
+  const handleTogglePassword = () => {
+    setShowPassword(!showPassword);
+};
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -141,6 +168,7 @@ const LoginPopover = ({ onClose, onToggle }) => {
             </h2>
           </Group>
           <H2>Enter your password</H2>
+          <PasswordContainer>
           <Input
             type="text"
             name="userid"
@@ -148,13 +176,21 @@ const LoginPopover = ({ onClose, onToggle }) => {
             placeholder="userid"
             onChange={handleChange}
           />
-          <Input
-            type="password"
-            name="password"
-            value={formData.password}
-            placeholder="Password"
-            onChange={handleChange}
-          />
+          </PasswordContainer>
+          <PasswordContainer>
+            <Input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              value={formData.password}
+              placeholder="Password"
+              onChange={handleChange}
+              style={{border: "none",
+                      margin: "0px 20px"}}
+            />
+            <ToggleButton onClick={handleTogglePassword}>
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </ToggleButton>
+          </PasswordContainer>
           <LoginButton onClick={handleLogin}>Log in</LoginButton>
           <SignUpMessage>
             Don’t have an account? <SignUpLink onClick={onToggle}>Sign up</SignUpLink>
