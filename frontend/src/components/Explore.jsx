@@ -26,6 +26,10 @@ const SearchBarContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const SearchInput = styled.input`
@@ -38,6 +42,9 @@ const SearchInput = styled.input`
   color: white;
   &:focus {
     outline: none;
+  }
+  @media (max-width: 768px) {
+    width: 100%;
   }
 `;
 
@@ -76,6 +83,10 @@ const UserDetails = styled.div`
 const UserName = styled.span`
   font-weight: bold;
   color: white;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 `;
 
 const UserHandle = styled.span`
