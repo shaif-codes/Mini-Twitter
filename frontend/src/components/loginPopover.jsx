@@ -158,7 +158,7 @@ const LoginPopover = ({ onClose, onToggle }) => {
     console.log(formData.userid, formData.password);
     try {
       const response = await axios.post(`${API_URL}/login`, { userid: formData.userid, password: formData.password });
-      console.log(response.data);
+      // console.log(response.data);
       if (response.data?.accessToken) {
         Cookie.set('accessToken', response.data.accessToken);
         Cookie.set('userid', formData.userid);

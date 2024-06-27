@@ -12,6 +12,9 @@ const ExploreContainer = styled.div`
   width: 75vw;
   height: 100vh;
   overflow-y: auto;
+  @min-width 768px {
+    width: 70vw;
+  }
 `;
 
 const SearchBarContainer = styled.div`
@@ -52,6 +55,10 @@ const UserCard = styled.div`
   margin-bottom: 10px;
   background-color: #1a1a1a;
   border-radius: 10px;
+  @midia (max-width: 768px) {
+    justify-content: space-around;
+}
+
 `;
 
 const ProfileImage = styled.img`
@@ -92,12 +99,16 @@ const FollowerCount = styled.span`
   display: flex;
   align-items: center;
   color: white;
+
+  @media (max-width: 768px) {
+    display: none;
+  } 
 `;
 
 const Explore = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [users, setUsers] = useState([]);
   const { state } = useContext(UserContext);
   // console.log(state);
 
@@ -118,26 +129,22 @@ const Explore = () => {
   }, [searchTerm, users]);
 
   const fetchMostFollowedUsers = () => {
-    // Placeholder for fetching most followed users
-    const mostFollowedUsers = [
-      {
-        id: 1,
-        name: 'John Doe',
-        handle: '@johndoe',
-        followers: 1200,
+    const mostFollowedUsers = state.following.map(following => {
+      return {
+        id: following._id,
+        name: following.name,
+        handle: following.userid,
+        followers: following.followers.length,
         profileImage: profile,
-      },
-      {
-        id: 2,
-        name: 'Jane Smith',
-        handle: '@janesmith',
-        followers: 1100,
-        profileImage: profile,
-      },
-    ];
+      };
+    });
+
+    mostFollowedUsers.sort((a, b) => b.followers - a.followers);
     setUsers(mostFollowedUsers);
     setFilteredUsers(mostFollowedUsers);
   };
+
+  
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -162,10 +169,9 @@ const Explore = () => {
               <UserHandle>{user.handle}</UserHandle>
             </UserDetails>
             <FollowerCount>
-              <i className="fas fa-user-friends" style={{ marginRight: '5px' }}></i>
               {user.followers} <p style={{marginLeft: "10px"}}> Followers</p>
-              <FollowButton style={{marginLeft: "10px"}}>Follow</FollowButton>
             </FollowerCount>
+            <FollowButton style={{marginLeft: "10px"}}>Follow</FollowButton>
           </UserCard>
         ))}
       </UsersContainer>
