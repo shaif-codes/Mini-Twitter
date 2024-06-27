@@ -91,27 +91,17 @@ cd Mini-Twitter
     npm install
     ```
 
-3. Create a `vite.config.js` file in the frontend directory and add the following proxy configuration:
-
-    ```js
-    import { defineConfig } from 'vite';
-    import react from '@vitejs/plugin-react';
-
-    export default defineConfig({
-      plugins: [react()],
-      server: {
-        proxy: {
-          '/api': {
-            target: 'http://localhost:5000',
-            changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''),
-          },
-        },
-      },
-    });
+3. Create a .config file where you add API_URL:
     ```
+    VITE_API_URL=http://localhost:5000
+    ```
+    or
+   ```
+   VITE_API_URL==<your_backend_server_url>
+    ```
+   
 
-4. Start the frontend development server:
+5. Start the frontend development server:
 
     ```bash
     npm run dev
