@@ -3,6 +3,11 @@ import styled from 'styled-components';
 import profile from '../assets/images/sampleProfile.png';
 import { FaTimes } from 'react-icons/fa';
 import { redirect } from 'react-router-dom';
+import { FaCheckCircle } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+const API_URL = import.meta.env.VITE_API_URL;
+import Cookie from 'js-cookie';
+import axios from 'axios';
 
 const Overlay = styled.div`
   position: fixed;
@@ -137,8 +142,28 @@ const CreatePostPopover = ({ onClose }) => {
     setText(e.target.value);
   };
 
-  const handlePost = () => {
+  const token = Cookie.get('accessToken');
+  const handlePost = async () => {
     // Handle post logic
+    try{
+      const response = await axios.post(`${API_URL}/tweet/create`, { tweet: text }, { headers: { Authorization: `Bearer ${token}` } });
+      if(response){
+        toast.success("tweet posted!!", {
+          icon: <FaCheckCircle style={{ color: '#1a89d4' }} />,
+          style : {backgroundColor: "#1a1a1a", color: "#1a89d4"}, 
+          progressClassName: 'GlobalStyle'
+        });
+        setText("");
+        setTimeout(()=>{
+          window.location.href = "/home"
+        }, 1000);
+        
+
+      }
+    }
+    catch(error){
+      console.log(error)
+    }
   };
 
   return (

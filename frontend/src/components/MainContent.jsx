@@ -7,7 +7,18 @@ import UserContext from '../context/userContext';
 import Cookie from 'js-cookie';
 import axios from 'axios';
 import formatDate from '../hooks/formatDate';
+// import UserContext from '../context/userContext';
+import { FaCheckCircle } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
 const API_URL = import.meta.env.VITE_API_URL;
+
+
+
+const GlobalStyle = styled.div`
+  .custom-progress-bar {
+    background-color: #1a89d4 !important;
+  }
+`;
 
 const ContentContainer = styled.div`
   display: flex;
@@ -156,6 +167,25 @@ const MainContent = () => {
 
   const token = Cookie.get('accessToken'); // Get token from cookie
 
+  const handlePostButton = async ()=>{
+    try{
+      const response = await axios.post(`${API_URL}/tweet/create`, { tweet: text }, { headers: { Authorization: `Bearer ${token}` } });
+      if(response){
+        toast.success("tweet posted!!", {
+          icon: <FaCheckCircle style={{ color: '#1a89d4' }} />,
+          style : {backgroundColor: "#1a1a1a", color: "#1a89d4"}, 
+          progressClassName: 'GlobalStyle'
+        });
+        setText("");
+      }
+    }
+    catch(error){
+      console.log(error)
+    }
+    // if(response)
+
+  }
+
   useEffect(() => {
     const fetchTweets = async () => {
       try {
@@ -169,7 +199,7 @@ const MainContent = () => {
       }
     };
     fetchTweets();
-  }, []);
+  }, [tweets]);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
@@ -188,7 +218,7 @@ const MainContent = () => {
             placeholder="What is happening?!"
             rows={1} // Set initial rows
           />
-          <PostButton>Post</PostButton>
+          <PostButton onClick={handlePostButton}>Post</PostButton>
           </InputAndButtonContainer>
         </ProfileAndInputContainer>
       </PostSection>
@@ -204,6 +234,7 @@ const MainContent = () => {
           }}
         />
       ))}
+      <ToastContainer/>
     </ContentContainer>
   );
 };

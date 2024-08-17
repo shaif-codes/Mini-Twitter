@@ -35,6 +35,7 @@ const Banner = styled.div`
   background-size: cover;
   background-position: center;
   height: 200px;
+  min-height: 200px;
   width: 100%;
   border-bottom: 1px solid #253341;
 `;
@@ -100,8 +101,9 @@ const Tab = styled.button`
   }
   &:focus {
     outline: none;
-    border-bottom: 2px solid #1a89d4;
   }
+  border-bottom: ${(props) => (props.isActive ? '4px solid #1a89d4' : 'none')};
+  border-radius: 0px;
 `;
 
 const ContentSection = styled.div`
@@ -144,8 +146,6 @@ const Profile = () => {
   const { state, tweetState } = useContext(UserContext);
   // console.log(state);
 
-  
-
   const [activeTab, setActiveTab] = useState('posts');
   const userPosts = tweetState.filter(tweet => tweet.tweetBy._id === state._id);
   console.log(userPosts);
@@ -171,8 +171,6 @@ const Profile = () => {
     }
   }
   );
-  
-
 
   return (
     <ProfileContainer>
@@ -199,9 +197,9 @@ const Profile = () => {
         <button>Edit profile</button>
       </ProfileDetails>
       <TabContainer>
-        <Tab onClick={() => setActiveTab('posts')}>Posts</Tab>
-        <Tab onClick={() => setActiveTab('followers')}>Followers</Tab>
-        <Tab onClick={() => setActiveTab('following')}>Following</Tab>
+        <Tab onClick={() => setActiveTab('posts')} isActive={activeTab === 'posts'}>Posts</Tab>
+        <Tab onClick={() => setActiveTab('followers')} isActive={activeTab === 'followers'}>Followers</Tab>
+        <Tab onClick={() => setActiveTab('following')} isActive={activeTab === 'following'}>Following</Tab>
       </TabContainer>
       <ContentSection>
         {activeTab === 'posts' && userPosts.map(post => (

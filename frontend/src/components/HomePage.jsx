@@ -7,6 +7,8 @@ import Profile from './Profile';
 import UserContext from '../context/userContext';
 import Cookie from 'js-cookie';
 import axios from 'axios';
+import CreatePostComponent from './CreatePostComponent';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AppContainer = styled.div`
@@ -31,6 +33,7 @@ const HomePage = () => {
   const [showHome, setShowHome] = useState(true);
   const [showExplore, setShowExplore] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
 
   useEffect(() => {
     const token = Cookie.get("accessToken");
@@ -60,11 +63,17 @@ const HomePage = () => {
   return (
     <UserContext.Provider value={{ state, setState, tweetState, setTweetState }}>
       <AppContainer>
-        <SideNav toggleCtrl={{home: [showHome, setShowHome], explore:[showExplore, setShowExplore], profile: [showProfile, setShowProfile]}} />
-        {showHome && <MainContent />}
-        {showExplore && <Explore/>}
-        {showProfile && <Profile/>}
+        <SideNav toggleCtrl={
+          {
+            home: [showHome, setShowHome], 
+            explore:[showExplore, setShowExplore], 
+            profile: [showProfile, setShowProfile]
+            }} />
+            {showHome && <MainContent />}
+            {showExplore && <Explore/>}
+            {showProfile && <Profile/>}
       </AppContainer>
+      {showCreatePost && <CreatePostComponent/>}
     </UserContext.Provider>
   );
 };
