@@ -6,8 +6,10 @@ Mini-Twitter is a simplified clone of Twitter built with a React frontend and a 
 ## Updates
 
 ### June 2024
+- The project is live now at `https://twittermini.vercel.app/`
 - The backend server is now live! You can use it by only building the frontend. 
 - To access the backend API, point your requests to `https://mini-twitter-4o2f.onrender.com`.
+
 
 ## Features
 
