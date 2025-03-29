@@ -28,10 +28,10 @@ app.use(cors({
 }));
 
 //paths that do not require token verification
-const paths = ['/register', '/login', '/debounce/userid', '/debounce/email', '/debounce/phone'];
+const paths = ['register', 'login', 'debounce/userid', 'debounce/email', 'debounce/phone'];
 
 app.use((req, res, next) => {
-    if (paths.includes(req.path)) {
+    if (paths.includes(req.path.replace('/', ''))) {
         next();
     } else {
         verifyToken(req, res, next);

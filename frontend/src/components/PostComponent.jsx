@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { FaHeart, FaComment } from 'react-icons/fa';
 import profile from '../assets/images/sampleProfile.png';
+import PropTypes from 'prop-types';
+import axios from 'axios';
+import Cookie from 'js-cookie';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const PostContainer = styled.div`
   background-color: #1a1a1a;
@@ -132,48 +137,143 @@ const CommentsSection = styled.div`
   }
 `;
 
-const PostInput = styled.textarea`
+const CommentList = styled.div`
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #253341;
+`;
+
+const CommentItem = styled.div`
+  padding: 10px 0;
+  border-bottom: 1px solid #253341;
+`;
+
+const CommentHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+`;
+
+const CommentAuthor = styled.span`
+  font-weight: bold;
+  margin-right: 5px;
+`;
+
+const CommentContent = styled.p`
+  margin: 5px 0;
+  color: #e1e1e1;
+`;
+
+const CommentDate = styled.span`
+  color: #657786;
+  font-size: 0.9em;
+`;
+
+const CommentInput = styled.textarea`
   width: 100%;
   padding: 10px;
-  margin-bottom: 10px;
-  border: none;
+  margin: 10px 0;
+  border: 1px solid #253341;
   border-radius: 5px;
-  background-color: black;
-  max-height: 60vh;
-  overflow-y: hidden;
-  font-size: 16px;
+  background-color: #192734;
   color: white;
-  resize: none; /* Prevent manual resizing */
-  overflow: hidden; /* Hide scrollbar */
+  resize: none;
+  min-height: 60px;
   &:focus {
     outline: none;
+    border-color: #1a89d4;
   }
-  &:hover {
-    outline: none;
-  }
+`;
 
-  @media (max-width: 768px) {
-    padding: 8px;
-    font-size: 14px;
+const CommentButton = styled.button`
+  background-color: #1a89d4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  &:hover {
+    background-color: #1a7abf;
   }
 `;
 
 const PostComponent = ({ post }) => {
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [likeCount, setLikeCount] = useState(0);
+  const token = Cookie.get('accessToken');
+  useEffect(() => {
+    // Fetch initial like status and count
+    fetchLikeStatus();
+    // Fetch comments if they're shown
+    if (showComments) {
+      fetchComments();
+    }
+  }, [post.id]);
 
-  const toggleLike = () => {
-    setLiked(!liked);
+  const fetchLikeStatus = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/likeCount/likeCount/${post.id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      setLiked(response.data.liked);
+      setLikeCount(response.data.count);
+    } catch (error) {
+      console.error('Error fetching like status:', error);
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/comments/${post.id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      setComments(response.data);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  const handleLike = async () => {
+    console.log("handleLike called");
+    try {
+      const endpoint = liked ? '/likeCount/unlike' : '/likeCount/like';
+      const token = Cookie.get('accessToken');
+      console.log({ endpoint, token, postId: post.id });
+      await axios.post(`${API_URL}${endpoint}`, { tweetId: post.id }, { headers: { 'Authorization': `Bearer ${token}` } });
+      setLiked(!liked);
+      setLikeCount(prev => liked ? prev - 1 : prev + 1);
+    } catch (error) {
+      console.error('Error updating like:', error);
+    }
+  };
+
+  const handleComment = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    try {
+      await axios.post(`${API_URL}/comments`, {
+        tweetId: post.id,
+        comment: newComment
+      }, { headers: { 'Authorization': `Bearer ${token}` } });
+      setNewComment('');
+      fetchComments(); // Refresh comments
+    } catch (error) {
+      console.error('Error posting comment:', error);
+    }
   };
 
   const toggleComments = () => {
     setShowComments(!showComments);
+    if (!showComments) {
+      fetchComments();
+    }
   };
 
   return (
     <PostContainer>
       <ProfileDetails>
-        <ProfileImage src={profile} />
+        <ProfileImage src={profile} alt="Profile" />
         <UserInfo>
           <UserName>{post.name}</UserName>
           <UserHandle>@{post.username}</UserHandle>
@@ -182,20 +282,48 @@ const PostComponent = ({ post }) => {
       </ProfileDetails>
       <PostContent>{post.content}</PostContent>
       <PostActions>
-        <ActionButton liked={liked} onClick={toggleLike}>
-          <FaHeart />
+        <ActionButton liked={liked} onClick={()=> handleLike(post.id)}>
+          <FaHeart /> {likeCount > 0 && <span>{likeCount}</span>}
         </ActionButton>
         <ActionButton onClick={toggleComments}>
-          <FaComment />
+          <FaComment /> {comments.length > 0 && <span>{comments.length}</span>}
         </ActionButton>
       </PostActions>
       {showComments && (
         <CommentsSection>
-          <PostInput placeholder="Add a comment..." />
+          <form onSubmit={handleComment}>
+            <CommentInput
+              placeholder="Add a comment..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+            />
+            <CommentButton type="submit">Comment</CommentButton>
+          </form>
+          <CommentList>
+            {comments.map((comment) => (
+              <CommentItem key={comment.id}>
+                <CommentHeader>
+                  <CommentAuthor>{comment.name}</CommentAuthor>
+                  <CommentDate>{new Date(comment.createdAt).toLocaleDateString()}</CommentDate>
+                </CommentHeader>
+                <CommentContent>{comment.comment}</CommentContent>
+              </CommentItem>
+            ))}
+          </CommentList>
         </CommentsSection>
       )}
     </PostContainer>
   );
+};
+
+PostComponent.propTypes = {
+  post: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    username: PropTypes.string.isRequired,
+    content: PropTypes.string.isRequired,
+    date: PropTypes.string.isRequired
+  }).isRequired
 };
 
 export default PostComponent;

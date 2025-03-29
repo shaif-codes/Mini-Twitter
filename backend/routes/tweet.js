@@ -13,13 +13,13 @@ router.get("/", async (req, res)=>{
         // }
         // res.send(tweets)
         const following = await User.findById(req.user._id).select("following")?.populate("following");
-        if (!following) {
-            return res.status(400).send("No following found");
-        }
-        if(following.following.length === 0){
-            return res.status(400).send("No following found");
-        }
-        const followingIds = following.following.map(follow => follow._id);
+        // if (!following) {
+        //     return res.status(400).send("No following found");
+        // }
+        // if(following.following.length === 0){
+        //     return res.status(400).send("No following found");
+        // }
+        const followingIds = following ? following.following.map(follow => follow._id) : [];
         followingIds.push(req.user._id);
         const timelineTweets = await Tweet.find({tweetBy:{$in: followingIds}}).populate("tweetBy")
         res.send(timelineTweets);

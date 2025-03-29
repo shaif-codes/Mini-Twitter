@@ -60,4 +60,12 @@ router.post("/unlike", async (req, res) => {
     }
 });
 
+router.get("/likeCount/:tweetId", async (req, res) => {
+    try {
+        const tweet = await Tweet.findById(req.params.tweetId);
+        res.status(200).json({ liked: tweet.likedBy.includes(req.user._id), count: tweet.likedBy.length });
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
 module.exports = router;
