@@ -304,8 +304,23 @@ const Explore = () => {
   const handleFollow = async (userIdToFollow) => {
     setIsLoading(true);
     console.log("Follow user:", userIdToFollow);
-    setIsLoading(false);
-    toast.info("Follow functionality not yet implemented.");
+    try {
+      const token = Cookie.get("accessToken");
+      if (!token) {
+        toast.error("Authentication error.");
+        setIsLoading(false);
+        return;
+      }
+      const response = await axios.post(`${API_URL}/follow`, {followId: userIdToFollow}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Follow response:", response.data);
+    } catch (error) {
+      console.error("Error following user:", error);
+      toast.error("Failed to follow user.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleUnfollow = async (userIdToUnfollow) => {
@@ -359,7 +374,7 @@ const Explore = () => {
                     Unfollow
                   </UnfollowButton>
                 ) : (
-                  <FollowButton onClick={() => handleFollow(user.id)}>
+                  <FollowButton onClick={() => handleFollow(user.handle)}>
                     Follow
                   </FollowButton>
                 )}
