@@ -40,6 +40,14 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     },
+    profilePictureUrl: {
+        type: String,
+        default: null // Or a default image URL
+    },
+    bannerPictureUrl: {
+        type: String,
+        default: null // Or a default image URL
+    },
     followers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

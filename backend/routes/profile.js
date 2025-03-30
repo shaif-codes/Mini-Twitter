@@ -1,47 +1,43 @@
-const express = require("express")
-const router = express.Router()
-const verifyToken = require("../middleware/verifyToken")
-const User = require("../models/User")
+const express = require("express");
+const router = express.Router();
+const verifyToken = require("../middleware/verifyToken");
+const User = require("../models/User");
+const { getProfile, updateProfile, uploadProfilePicture, uploadBannerPicture } = require("../controllers/profileController");
+const { uploadProfilePic, uploadBannerPic } = require("../middleware/upload");
 
-
-router.get("/", verifyToken, async (req, res) => {
-    try {
-        const user = await User.findOne({ _id: req.user._id })
-            .populate("followers")
-            .populate("following");
-
-        if (!user) {
-            return res.status(404).send("User not found");
-        }
-
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).send("Internal Server Error");
-    }
-});
+router.get("/", verifyToken, getProfile);
 
 router.get("/:id", verifyToken, async (req, res) => {
-    try {
-        const user = await User.findOne({ _id: req.params.id })
-            .populate("followers")
-            .populate("following");
+  try {
+    const user = await User.findOne({ _id: req.params.id })
+      .populate("followers")
+      .populate("following");
 
-        if (!user) {
-            return res.status(404).send("User not found");
-        }
-
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).send("Internal Server Error");
+    if (!user) {
+      return res.status(404).send("User not found");
     }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user by ID:", error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
-router.put("/", verifyToken, async (req, res) => {
-    try {
-        const user = await User.findByIdAndUpdate(req.user._id, req.body, { new: true });
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).send("Internal Server Error");
-    }
-});
+router.put("/", verifyToken, updateProfile);
+
+router.post(
+  "/upload/profile-picture",
+  verifyToken,
+  uploadProfilePic,
+  uploadProfilePicture
+);
+
+router.post(
+  "/upload/banner-picture",
+  verifyToken,
+  uploadBannerPic,
+  uploadBannerPicture
+);
+
 module.exports = router;

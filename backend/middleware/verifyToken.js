@@ -7,6 +7,7 @@ const secret = process.env.JWT_SECRET;
 
 const verifyToken = async (req, res, next) => {
     const token = req.header("Authorization") && req.header("Authorization").split(" ")[1];
+
     if (!token) {
         return res.status(401).send("Access denied");
     }
@@ -14,7 +15,6 @@ const verifyToken = async (req, res, next) => {
     try {
         // Decode the JWT token to get the payload
         const decoded = jwt.verify(token, secret);
-        
         // Find the user by ID
         const user = await User.findById(decoded._id);
         if (!user) {
