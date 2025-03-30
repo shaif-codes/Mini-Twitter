@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaHeart, FaComment } from 'react-icons/fa';
-import profile from '../assets/images/sampleProfile.png';
-import PropTypes from 'prop-types';
-import axios from 'axios';
-import Cookie from 'js-cookie';
+import { useState, useEffect } from "react";
+import styled from "styled-components";
+import { FaHeart, FaComment } from "react-icons/fa";
+import profile from "../assets/images/sampleProfile.png";
+import PropTypes from "prop-types";
+import axios from "axios";
+import Cookie from "js-cookie";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -100,18 +100,21 @@ const PostContent = styled.div`
 const PostActions = styled.div`
   display: flex;
   justify-content: space-between;
-  width: 100px;
+  width: 150px;
 
   @media (max-width: 768px) {
-    width: 80px;
+    width: 120px;
   }
 `;
 
 const ActionButton = styled.button`
   background: none;
   border: none;
-  color: ${(props) => (props.liked ? '#1a89d4' : 'white')};
+  color: ${(props) => (props.liked ? "#1a89d4" : "white")};
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 
   &:hover {
     opacity: 0.7;
@@ -126,6 +129,11 @@ const ActionButton = styled.button`
   @media (max-width: 768px) {
     font-size: 14px;
   }
+`;
+
+const ActionCount = styled.span`
+  font-size: 14px;
+  color: inherit;
 `;
 
 const CommentsSection = styled.div`
@@ -202,48 +210,57 @@ const PostComponent = ({ post }) => {
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const [likeCount, setLikeCount] = useState(0);
-  const token = Cookie.get('accessToken');
+  const token = Cookie.get("accessToken");
   useEffect(() => {
     // Fetch initial like status and count
     fetchLikeStatus();
     // Fetch comments if they're shown
-    if (showComments) {
-      fetchComments();
-    }
+
+    fetchComments();
   }, [post.id]);
 
   const fetchLikeStatus = async () => {
     try {
-      const response = await axios.get(`${API_URL}/likeCount/likeCount/${post.id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const response = await axios.get(
+        `${API_URL}/likeCount/likeCount/${post.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log(response.data);
       setLiked(response.data.liked);
       setLikeCount(response.data.count);
     } catch (error) {
-      console.error('Error fetching like status:', error);
+      console.error("Error fetching like status:", error);
     }
   };
 
   const fetchComments = async () => {
     try {
-      const response = await axios.get(`${API_URL}/comments/${post.id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      setComments(response.data);
+      const response = await axios.get(`${API_URL}/comments/${post.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setComments(response.data.data);
     } catch (error) {
-      console.error('Error fetching comments:', error);
+      console.error("Error fetching comments:", error);
     }
   };
 
   const handleLike = async () => {
     console.log("handleLike called");
     try {
-      const endpoint = liked ? '/likeCount/unlike' : '/likeCount/like';
-      const token = Cookie.get('accessToken');
+      const endpoint = liked ? "/likeCount/unlike" : "/likeCount/like";
+      const token = Cookie.get("accessToken");
       console.log({ endpoint, token, postId: post.id });
-      await axios.post(`${API_URL}${endpoint}`, { tweetId: post.id }, { headers: { 'Authorization': `Bearer ${token}` } });
+      await axios.post(
+        `${API_URL}${endpoint}`,
+        { tweetId: post.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setLiked(!liked);
-      setLikeCount(prev => liked ? prev - 1 : prev + 1);
+      setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
     } catch (error) {
-      console.error('Error updating like:', error);
+      console.error("Error updating like:", error);
     }
   };
 
@@ -252,14 +269,18 @@ const PostComponent = ({ post }) => {
     if (!newComment.trim()) return;
 
     try {
-      await axios.post(`${API_URL}/comments`, {
-        tweetId: post.id,
-        comment: newComment
-      }, { headers: { 'Authorization': `Bearer ${token}` } });
-      setNewComment('');
+      await axios.post(
+        `${API_URL}/comments`,
+        {
+          tweetId: post.id,
+          comment: newComment,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNewComment("");
       fetchComments(); // Refresh comments
     } catch (error) {
-      console.error('Error posting comment:', error);
+      console.error("Error posting comment:", error);
     }
   };
 
@@ -282,11 +303,13 @@ const PostComponent = ({ post }) => {
       </ProfileDetails>
       <PostContent>{post.content}</PostContent>
       <PostActions>
-        <ActionButton liked={liked} onClick={()=> handleLike(post.id)}>
-          <FaHeart /> {likeCount > 0 && <span>{likeCount}</span>}
+        <ActionButton liked={liked} onClick={() => handleLike(post.id)}>
+          <FaHeart />
+          <ActionCount>{likeCount}</ActionCount>
         </ActionButton>
         <ActionButton onClick={toggleComments}>
-          <FaComment /> {comments.length > 0 && <span>{comments.length}</span>}
+          <FaComment />
+          <ActionCount>{comments.length}</ActionCount>
         </ActionButton>
       </PostActions>
       {showComments && (
@@ -304,7 +327,9 @@ const PostComponent = ({ post }) => {
               <CommentItem key={comment.id}>
                 <CommentHeader>
                   <CommentAuthor>{comment.name}</CommentAuthor>
-                  <CommentDate>{new Date(comment.createdAt).toLocaleDateString()}</CommentDate>
+                  <CommentDate>
+                    {new Date(comment.createdAt).toLocaleDateString()}
+                  </CommentDate>
                 </CommentHeader>
                 <CommentContent>{comment.comment}</CommentContent>
               </CommentItem>
@@ -322,8 +347,8 @@ PostComponent.propTypes = {
     name: PropTypes.string.isRequired,
     username: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
-    date: PropTypes.string.isRequired
-  }).isRequired
+    date: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default PostComponent;

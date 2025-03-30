@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import profile from '../assets/images/sampleProfile.png';
 import PostComponent from './PostComponent';
-import { redirect } from 'react-router-dom';
 import UserContext from '../context/userContext';
 import Cookie from 'js-cookie';
 import axios from 'axios';
@@ -14,11 +13,11 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 
 
-const GlobalStyle = styled.div`
-  .custom-progress-bar {
-    background-color: #1a89d4 !important;
-  }
-`;
+// const GlobalStyle = styled.div`
+//   .custom-progress-bar {
+//     background-color: #1a89d4 !important;
+//   }
+// `;
 
 const ContentContainer = styled.div`
   display: flex;

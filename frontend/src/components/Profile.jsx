@@ -9,6 +9,7 @@ import bannerPic from '../assets/images/banner-placeholder.png';
 import Post from './PostComponent';
 import Cookie from 'js-cookie';
 import formatDate from '../hooks/formatDate';
+import SignUpPopover from './SignUpPopover';
 
 const ProfileContainer = styled.div`
   display: flex;
@@ -142,11 +143,26 @@ const UnfollowButton = styled(FollowButton)`
   background-color: red;
 `;
 
+const EditButton = styled.button`
+  background-color: transparent;
+  color: white;
+  border: 1px solid #1a89d4;
+  padding: 8px 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-weight: bold;
+  &:hover {
+    background-color: rgba(26, 137, 212, 0.1);
+  }
+`;
+
 const Profile = () => {
   const { state, tweetState } = useContext(UserContext);
   // console.log(state);
 
   const [activeTab, setActiveTab] = useState('posts');
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const userPosts = tweetState.filter(tweet => tweet.tweetBy._id === state._id);
   console.log(userPosts);
  
@@ -172,8 +188,17 @@ const Profile = () => {
   }
   );
 
+  const handleEditProfile = () => {
+    setShowEditProfile(true);
+  };
+
+  const handleClosePopover = () => {
+    setShowEditProfile(false);
+  };
+
   return (
     <ProfileContainer>
+      {showEditProfile && <SignUpPopover onClose={handleClosePopover} isEditMode={true} userData={state} />}
       <Banner/>
       <ProfileDetails>
         <ProfileImage src={profilePic} alt="Profile" />
@@ -194,7 +219,7 @@ const Profile = () => {
             <strong>{state.followers.length} </strong> <pre> Followers </pre>
           </Stat>
         </UserStats>
-        <button>Edit profile</button>
+        <EditButton onClick={handleEditProfile}>Edit profile</EditButton>
       </ProfileDetails>
       <TabContainer>
         <Tab onClick={() => setActiveTab('posts')} isActive={activeTab === 'posts'}>Posts</Tab>

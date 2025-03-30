@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import logo from '../assets/images/logo.png';
-import { SlCalender } from "react-icons/sl";
 import { RxCross1 } from "react-icons/rx";
 import useDebounce from '../hooks/useDebounce';
 import axios from 'axios';
+import PropTypes from 'prop-types';
 const API_URL = import.meta.env.VITE_API_URL;
+import Cookie from "js-cookie";
 
 const Container = styled.div`
   display: flex;
@@ -122,7 +123,7 @@ const NextButton = styled.button`
 //   }
 // }, [debounceEmail]);
 
-const SignUpPageOne = ({ onNext, onClose, pageData }) => {
+const SignUpPageOne = ({ onNext, onClose, pageData, isEditMode = false }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -131,6 +132,16 @@ const SignUpPageOne = ({ onNext, onClose, pageData }) => {
     ...pageData,
   });
 
+  useEffect(() => {
+    if (pageData && Object.keys(pageData).length > 0) {
+      console.log("PageData received in SignUpPageOne:", pageData);
+      setFormData(prev => ({
+        ...prev,
+        ...pageData
+      }));
+    }
+  }, [pageData]);
+
   const [errors, setErrors] = useState({
     name: '',
     email: '',
@@ -138,100 +149,78 @@ const SignUpPageOne = ({ onNext, onClose, pageData }) => {
     phone: '',
   });
 
-const debounceEmail = useDebounce(formData.email, 500);
+  const debouncedEmail = useDebounce(formData.email, 500);
+  const debouncedPhone = useDebounce(formData.phone, 500);
 
-useEffect(() =>{
-  const checkAvailableEmail = async (debounceEmail) =>{
-    if(debounceEmail){
-      const response = await axios.post(`${API_URL}/debounce/email`, {email: debounceEmail});
-      if(response.data?.email){
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          email: 'Email already exists',
-        }));
+  useEffect(() =>{
+    const checkAvailableEmail = async (emailToCheck) =>{
+      if (isEditMode && emailToCheck === pageData?.email) {
+        setErrors(prev => ({ ...prev, email: '' }));
+        return;
       }
-      else{
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          email: '',
-        }));
+      
+      if(emailToCheck){
+        try {
+          const response = await axios.post(`${API_URL}/debounce/email`, {email: emailToCheck});
+          if(response.data?.email){
+            setErrors((prevErrors) => ({ ...prevErrors, email: 'Email already exists' }));
+          } else {
+            setErrors((prevErrors) => ({ ...prevErrors, email: '' }));
+          }
+        } catch (error) {
+           console.error("Error checking email debounce:", error);
+        }
       }
     }
-  }
 
-  checkAvailableEmail(debounceEmail);
+    checkAvailableEmail(debouncedEmail);
   
-}, [debounceEmail])
+  }, [debouncedEmail, isEditMode, pageData?.email]);
 
-const debouncePhone = useDebounce(formData.phone, 500);
-useEffect(() => {
-  const checkAvailablePhone = async (debouncePhone) => {
-    if(debouncePhone){
-      const response = await axios.post(`${API_URL}/debounce/phone`, {phone: debouncePhone});
-      if(response.data?.phone){
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          phone: 'Phone number already exists',
-        }));
+  useEffect(() => {
+    const checkAvailablePhone = async (phoneToCheck) => {
+      if (isEditMode && phoneToCheck === pageData?.phone) {
+        setErrors(prev => ({ ...prev, phone: '' }));
+        return;
       }
-      else{
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          phone: '',
-        }));
+      
+      if(phoneToCheck){
+         try {
+          const response = await axios.post(`${API_URL}/debounce/phone`, {phone: phoneToCheck});
+          if(response.data?.phone){
+            setErrors((prevErrors) => ({ ...prevErrors, phone: 'Phone number already exists' }));
+          } else {
+            setErrors((prevErrors) => ({ ...prevErrors, phone: '' }));
+          }
+        } catch (error) {
+           console.error("Error checking phone debounce:", error);
+        }
       }
-    }
-  };
-  checkAvailablePhone(debouncePhone);
-}, [debouncePhone]);
-
-// useEffect(async()=>{
-//   if(debounceEmail){
-//     const response = await axios('/api/debounce/email', {email: debounceEmail});
-//     if(response.ok){
-//       setErrors((prevErrors) => ({
-//         ...prevErrors,
-//         email: 'Email already exists',
-//       }));
-//     }
-//     else{
-//       setErrors((prevErrors) => ({
-//         ...prevErrors,
-//         email: '',
-//       }));
-//     }
-//   }
-// }, [debounceEmail]);
+    };
+    checkAvailablePhone(debouncedPhone);
+  }, [debouncedPhone, isEditMode, pageData?.phone]);
 
   const validate = () => {
-    const newErrors = {
-      name: '',
-      email: '',
-      dob: '',
-    };
+    const newErrors = { name: '', email: '', dob: '', phone: '' };
 
-    if (!formData.name) {
-      newErrors.name = 'Name is required';
-    } else if (!/^[a-zA-Z\s]+$/.test(formData.name)) {
-      newErrors.name = 'Name can only contain letters and spaces';
+    if (!formData.name) newErrors.name = 'Name is required';
+    
+    if (!isEditMode) {
+        if (!formData.email) newErrors.email = 'Email is required';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Email is invalid';
     }
 
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
+    if (!formData.dob) newErrors.dob = 'Date of birth is required';
+    else if (new Date(formData.dob) >= new Date()) newErrors.dob = 'Date of birth must be in the past';
+    
+    if (!formData.phone) newErrors.phone = 'Phone is required';
+    else if (formData.phone && !/^[0-9]{10}$/.test(formData.phone)) newErrors.phone = 'Phone number is invalid';
+    
+    if (errors.email && errors.email !== 'Email is required' && errors.email !== 'Email is invalid') newErrors.email = errors.email;
+    if (errors.phone && errors.phone !== 'Phone is required' && errors.phone !== 'Phone number is invalid') newErrors.phone = errors.phone;
 
-    if (!formData.dob) {
-      newErrors.dob = 'Date of birth is required';
-    } else if (new Date(formData.dob) >= new Date()) {
-      newErrors.dob = 'Date of birth must be in the past';
-    }
-    if(formData.phone && !/^[0-9]{10}$/.test(formData.phone)){
-      newErrors.phone = 'Phone number is invalid';
-    }
     setErrors(newErrors);
-    return !newErrors.name && !newErrors.email && !newErrors.dob;
+    return Object.values(newErrors).every(error => !error);
   };
 
   const handleChange = (e) => {
@@ -240,6 +229,9 @@ useEffect(() => {
       ...prevData,
       [name]: value,
     }));
+    if (errors[name] && (errors[name].includes('required') || errors[name].includes('invalid') || errors[name].includes('past'))) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleNext = () => {
@@ -256,33 +248,38 @@ useEffect(() => {
           <RxCross1 />
         </h2>
       </Group>
-      <H2>Create your account</H2>
+      <H2>{isEditMode ? 'Edit Basic Info' : 'Create your account'}</H2>
       <Input
         type="text"
         name="name"
-        value={formData.name}
+        value={formData.name || ''}
         placeholder="Enter your name"
         onChange={handleChange}
         style={{ borderColor: errors.name ? 'red' : '#ccc' }}
       />
       {errors.name && <Message style={{ color: 'red'}}>{errors.name}</Message>}
+      
       <Input
         type="email"
         name="email"
-        value={formData.email}
+        value={formData.email || ''}
         placeholder="Enter your email"
         onChange={handleChange}
         style={{ borderColor: errors.email ? 'red' : '#ccc' }}
+        disabled={isEditMode}
       />
       {errors.email && <Message style={{ color: 'red'}}>{errors.email}</Message>}
+      
       <Input
         type="tel"
         name="phone"
-        value={formData.phone}
+        value={formData.phone || ''}
         placeholder="Enter your phone number"
         onChange={handleChange}
+        style={{ borderColor: errors.phone ? 'red' : '#ccc' }}
       />
       {errors.phone && <Message style={{ color: 'red'}}>{errors.phone}</Message>}
+      
       <Label>Date of Birth</Label>
       <Message>
         This will not be shown publicly. Confirm your own age, even if this account is for a business, a pet, or something else.
@@ -291,16 +288,27 @@ useEffect(() => {
         type="date"
         name="dob"
         style={{ backgroundColor: "white", color: "black", borderColor: errors.dob ? 'red' : '#ccc' }}
-        value={formData.dob}
+        value={formData.dob || ''}
         placeholder='Enter your date of birth'
         onChange={handleChange}
       />
       {errors.dob && <Message style={{ color: 'red' }}>{errors.dob}</Message>}
-      <NextButton disabled={errors.name && errors.email && errors.phone && errors.dob} onClick={handleNext}>
-        Next
+      
+      <NextButton 
+         disabled={Object.values(errors).some(error => !!error)}
+         onClick={handleNext}
+      >
+        {isEditMode ? 'Next' : 'Continue'}
       </NextButton>
     </Container>
   );
+};
+
+SignUpPageOne.propTypes = {
+  onNext: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  pageData: PropTypes.object,
+  isEditMode: PropTypes.bool
 };
 
 export default SignUpPageOne;

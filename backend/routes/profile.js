@@ -36,4 +36,12 @@ router.get("/:id", verifyToken, async (req, res) => {
     }
 });
 
+router.put("/", verifyToken, async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.user._id, req.body, { new: true });
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).send("Internal Server Error");
+    }
+});
 module.exports = router;

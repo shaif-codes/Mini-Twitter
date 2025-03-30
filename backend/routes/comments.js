@@ -3,6 +3,7 @@ const router = express.Router()
 const Comment = require("../models/Comments")
 const Tweet = require("../models/Tweets")
 const mongoose = require("mongoose")
+const { successResponse, errorResponse, notFoundResponse } = require("../utils/responseUtils")
 
 router.post("/", async (req, res) => {
     // console.log(req.body)
@@ -10,7 +11,7 @@ router.post("/", async (req, res) => {
         const tweet = await Tweet.findById(req.body.tweetId);
 
         if (!tweet) 
-            return res.status(404).send("Tweet not found");
+            return notFoundResponse(res, "Tweet not found");
 
         const comment = new Comment({
             comment: req.body.comment,
@@ -21,9 +22,9 @@ router.post("/", async (req, res) => {
         await comment.save();
         await tweet.save();
 
-        res.status(201).json(comment);
+        return successResponse(res, comment, "Comment added successfully", 201);
     } catch (error) {
-        res.status(500).send({status: error.status, message: error.message});
+        return errorResponse(res, "Failed to add comment", 500, error);
     }
 });
 
@@ -38,6 +39,11 @@ router.get("/:tweetId", async (req, res) => {
                 select: "userid name email"
             }
         });
+
+        if (!comments) {
+            return notFoundResponse(res, "Tweet not found");
+        }
+
         const mappedComments = comments.comments.map(comment => ({
             id: comment._id,
             comment: comment.comment,
@@ -48,11 +54,11 @@ router.get("/:tweetId", async (req, res) => {
             createdAt: comment.createdAt,
             updatedAt: comment.updatedAt
         }));
-        res.status(200).json(mappedComments);
+
+        return successResponse(res, mappedComments, "Comments retrieved successfully");
     } catch (error) {
-        res.status(500).send({status: error.status, message: error.message});
+        return errorResponse(res, "Failed to fetch comments", 500, error);
     }
 });
-
 
 module.exports = router;

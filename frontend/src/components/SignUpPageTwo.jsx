@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { IoArrowBackOutline } from "react-icons/io5";
 import { RxCross1 } from "react-icons/rx";
-import AuthButton from './AuthButton';
 import logo from '../assets/images/logo.png';
 import axios from 'axios';
 import useDebounce from '../hooks/useDebounce';  // Import the debounce hook
+import PropTypes from 'prop-types';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Container = styled.div`
@@ -98,27 +98,33 @@ const Message = styled.p`
   margin-top: 10px;
 `;
 
-const SignUpPageTwo = ({ formData, onSubmit, onBack }) => {
+const SignUpPageTwo = ({ formData, onSubmit, onBack, isEditMode = false }) => {
     const getUserid = formData.userId ? formData.userId : "";
     const getPassword = formData.password ? formData.password : "";
 
     const [password, setPassword] = useState(getPassword);
+    const [confirmPassword, setConfirmPassword] = useState(getPassword);
     const [userId, setUserId] = useState(getUserid);
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [usernameError, setUsernameError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     const debouncedUserId = useDebounce(userId, 500); // 500ms debounce delay
 
     useEffect(() => {
         const checkAvailableUserId = async (debouncedUserId) => {
+            // If in edit mode and userId is the same as original, don't check
+            if (isEditMode && debouncedUserId === formData.userId) {
+                return;
+            }
+            
             try {
                 const response = await axios.post(`${API_URL}/debounce/userid`, { userid: debouncedUserId });
-                console.log(response.data?.userid);
                 if (response.data?.userid) {
                     setUsernameError('Username is not available');
                 } else {
                     setUsernameError('');
-                    
                 }
             } catch (error) {
                 console.error(error);
@@ -129,26 +135,80 @@ const SignUpPageTwo = ({ formData, onSubmit, onBack }) => {
         if (debouncedUserId) {
             checkAvailableUserId(debouncedUserId);
         }
-    }, [debouncedUserId]);
+    }, [debouncedUserId, isEditMode, formData.userId]);
 
     const handlePasswordChange = (e) => {
         setPassword(e.target.value);
-        formData.password = e.target.value;
+        validatePassword(e.target.value, confirmPassword);
+    };
+
+    const handleConfirmPasswordChange = (e) => {
+        setConfirmPassword(e.target.value);
+        validatePassword(password, e.target.value);
+    };
+
+    const validatePassword = (pwd, confirmPwd) => {
+        if (pwd !== confirmPwd) {
+            setPasswordError('Passwords do not match');
+            return false;
+        }
+        
+        if (pwd && !isEditMode) {
+            const passwordRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])');
+            if (pwd.length < 8 || !passwordRegex.test(pwd)) {
+                setPasswordError('Password does not meet requirements');
+                return false;
+            }
+        }
+        
+        setPasswordError('');
+        return true;
     };
 
     const handleUserIdChange = (e) => {
         setUserId(e.target.value);
-        formData.userId = e.target.value;
     };
 
     const handleTogglePassword = () => {
         setShowPassword(!showPassword);
     };
 
+    const handleToggleConfirmPassword = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
+
     const isValid = () => {
-        const passwordRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])');
+        // In edit mode, passwords are optional
+        if (isEditMode) {
+            // If passwords are provided, they must be valid
+            if (password || confirmPassword) {
+                return password === confirmPassword && 
+                       (password.length === 0 || 
+                        (password.length >= 8 && 
+                         /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/.test(password))) && 
+                       usernameError === '';
+            }
+            // If no passwords, just check userId
+            return usernameError === '';
+        }
+        
+        // Regular signup validation
+        const passwordRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])');
         const usernameRegex = new RegExp('^[a-zA-Z0-9_]*$');
-        return password.length >= 8 && passwordRegex.test(password) && usernameRegex.test(userId) && usernameError === '';
+        return password.length >= 8 && 
+               passwordRegex.test(password) && 
+               password === confirmPassword &&
+               usernameRegex.test(userId) && 
+               usernameError === '';
+    };
+
+    const handleSubmit = () => {
+        onSubmit({ 
+            ...formData, 
+            userId, 
+            password, 
+            confirmPassword 
+        });
     };
 
     return (
@@ -159,11 +219,17 @@ const SignUpPageTwo = ({ formData, onSubmit, onBack }) => {
                     <img src={logo} height={50} alt="logo" />
                     <h2 onClick={() => window.location.href = "/"}><RxCross1 /></h2>
                 </Group>
-                <h2>Set your password</h2>
+                <h2>{isEditMode ? 'Update password' : 'Set your password'}</h2>
                 <PasswordContainer>
-                    <Input type="text" value={userId} onChange={handleUserIdChange} placeholder="Enter Your UserId" />
+                    <Input 
+                        type="text" 
+                        value={userId} 
+                        onChange={handleUserIdChange} 
+                        placeholder="Enter Your UserId" 
+                        disabled={isEditMode}
+                    />
                 </PasswordContainer>
-                {formData.userId ? (usernameError && <Message>{usernameError}</Message>) : 
+                {userId ? (usernameError && <Message style={{ color: 'red' }}>{usernameError}</Message>) : 
                 <Message>
                     Username should be unique and should not contain any special characters
                 </Message>}
@@ -173,30 +239,54 @@ const SignUpPageTwo = ({ formData, onSubmit, onBack }) => {
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={handlePasswordChange}
-                        placeholder="Password"
+                        placeholder={isEditMode ? "New password (optional)" : "Password"}
                     />
                     <ToggleButton onClick={handleTogglePassword}>
                         {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </ToggleButton>
                 </PasswordContainer>
+                
+                <PasswordContainer>
+                    <Input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={handleConfirmPasswordChange}
+                        placeholder={isEditMode ? "Confirm new password" : "Confirm password"}
+                    />
+                    <ToggleButton onClick={handleToggleConfirmPassword}>
+                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </ToggleButton>
+                </PasswordContainer>
+                
+                {passwordError && <Message style={{ color: 'red' }}>{passwordError}</Message>}
+                
                 <Message>
-                    Passwords must be at least 8 characters long. <br />
+                    {isEditMode ? 'Leave blank to keep current password' : 'Passwords must be at least 8 characters long.'} <br />
                     Passwords must have at least one special character. <br />
-                    Passwords must have at least one uppercase ('A'-'Z'). <br />
-                    Passwords must have at least one lowercase ('a'-'z').<br />
-                    Passwords must have at least one digit ('0'-'9').
+                    Passwords must have at least one uppercase (&apos;A&apos;-&apos;Z&apos;). <br />
+                    Passwords must have at least one lowercase (&apos;a&apos;-&apos;z&apos;).<br />
+                    Passwords must have at least one digit (&apos;0&apos;-&apos;9&apos;).
                 </Message>
             </Group>
             <Group>
                 <Message>
-                    By signing up, you agree to the Terms of Service and Privacy Policy, including Cookie Use. X may use your contact information, including your email address and phone number for purposes outlined in our Privacy Policy, such as keeping your account secure and personalising our services, including ads. Learn more. Others will be able to find you by email address or phone number, when provided, unless you choose otherwise here.
+                    {isEditMode ? 
+                      'By updating your profile, you agree to our updated Terms of Service.' :
+                      'By signing up, you agree to the Terms of Service and Privacy Policy, including Cookie Use.'}
                 </Message>
-                <SignUpButton $primary onClick={() => onSubmit({ ...formData, password, userId })} disabled={!isValid()}>
-                    Sign up
+                <SignUpButton onClick={handleSubmit} disabled={!isValid()}>
+                    {isEditMode ? 'Update' : 'Sign up'}
                 </SignUpButton>
             </Group>
         </Container>
     );
+};
+
+SignUpPageTwo.propTypes = {
+    formData: PropTypes.object.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    onBack: PropTypes.func.isRequired,
+    isEditMode: PropTypes.bool
 };
 
 export default SignUpPageTwo;
