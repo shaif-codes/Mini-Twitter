@@ -5,22 +5,20 @@ const path = require('path');
 // Make sure the path to your service account key file is correct.
 // If you placed it directly in 'backend/services', this path should work.
 // If you placed it elsewhere in 'backend', adjust the path accordingly.
-// const serviceAccountPath = {
-//     type: process.env.FIREBASE_ACCOUNT_TYPE,
-//     project_id: process.env.FIREBASE_PROJECT_ID,
-//     private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-//     private_key: process.env.FIREBASE_PRIVATE_KEY,
-//     client_email: process.env.FIREBASE_CLIENT_EMAIL,
-//     client_id: process.env.FIREBASE_CLIENT_ID,
-//     auth_uri: process.env.FIREBASE_AUTH_URI,
-//     token_uri: process.env.FIREBASE_TOKEN_URI,
-//     auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
-//     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
-//     universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN
-// } 
+const serviceAccountPath = {
+    type: process.env.FIREBASE_ACCOUNT_TYPE,
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY,
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: process.env.FIREBASE_AUTH_URI,
+    token_uri: process.env.FIREBASE_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+    universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN
+} 
 
-// Or if in backend root: const serviceAccountPath = path.join(__dirname, '../firebase-service-account.json');
-const serviceAccountPath = path.join(__dirname, './firebase-service-account.json');
 try {
   // Initialize Firebase Admin SDK
   const bucketUrl = process.env.BUCKET_URL;
