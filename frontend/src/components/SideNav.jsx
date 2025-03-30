@@ -1,11 +1,11 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { FaHome, FaUser, FaSearch } from 'react-icons/fa';
 import { IoMdCreate } from 'react-icons/io';
 import logo from '../assets/images/logo.png';
 import profile from '../assets/images/sampleProfile.png';
 import UserContext from '../context/userContext';
-
+import PropTypes from 'prop-types';
 const NavContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -32,8 +32,8 @@ const NavItem = styled.div`
   margin: 10px 0;
   font-size: 23px;
   cursor: pointer;
-  background-color: ${({ isactive }) => (isactive ? '#1a1a1a' : 'transparent')};
-  border-radius: ${({ isactive }) => (isactive ? '30px' : '0')};
+  background-color: ${({ $isactive }) => ($isactive ? '#1a1a1a' : 'transparent')};
+  border-radius: ${({ $isactive }) => ($isactive ? '30px' : '0')};
 
   &:hover {
     background-color: #1a1a1a;
@@ -183,19 +183,19 @@ const SideNav = ({ toggleCtrl }) => {
             <img src={logo} alt="logo" width={50} />
           </NavIcon>
         </NavItem>
-        <NavItem onClick={() => handleToggleComponent('/home')} isactive={activeItem === '/home'}>
+        <NavItem onClick={() => handleToggleComponent('/home')} $isactive={activeItem === '/home'}>
           <NavIcon>
             <FaHome />
           </NavIcon>
           <NavText>Home</NavText>
         </NavItem>
-        <NavItem onClick={() => handleToggleComponent('/explore')} isactive={activeItem === '/explore'}>
+        <NavItem onClick={() => handleToggleComponent('/explore')} $isactive={activeItem === '/explore'}>
           <NavIcon>
             <FaSearch />
           </NavIcon>
           <NavText>Explore</NavText>
         </NavItem>
-        <NavItem onClick={() => handleToggleComponent('/profile')} isactive={activeItem === '/profile'}>
+        <NavItem onClick={() => handleToggleComponent('/profile')} $isActive={activeItem === '/profile'}>
           <NavIcon>
             <FaUser />
           </NavIcon>
@@ -216,6 +216,10 @@ const SideNav = ({ toggleCtrl }) => {
       </ProfileSection>
     </NavContainer>
   );
+};
+
+SideNav.propTypes = {
+  toggleCtrl: PropTypes.object.isRequired,
 };
 
 export default SideNav;

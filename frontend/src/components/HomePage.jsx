@@ -43,7 +43,7 @@ const HomePage = () => {
       try {
         const response = await axios.get(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
         if (response.status === 200) {
-          setState(response.data);
+          setState(response.data.data);
         }
       } catch (err) {
         console.log(err);

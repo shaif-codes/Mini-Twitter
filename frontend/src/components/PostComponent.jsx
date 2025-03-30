@@ -110,7 +110,7 @@ const PostActions = styled.div`
 const ActionButton = styled.button`
   background: none;
   border: none;
-  color: ${(props) => (props.liked ? "#1a89d4" : "white")};
+  color: ${(props) => (props.$liked ? "#1a89d4" : "white")};
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -303,7 +303,7 @@ const PostComponent = ({ post }) => {
       </ProfileDetails>
       <PostContent>{post.content}</PostContent>
       <PostActions>
-        <ActionButton liked={liked} onClick={() => handleLike(post.id)}>
+        <ActionButton $liked={liked} onClick={handleLike}>
           <FaHeart />
           <ActionCount>{likeCount}</ActionCount>
         </ActionButton>

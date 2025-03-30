@@ -166,27 +166,25 @@ const Profile = () => {
   const userPosts = tweetState.filter(tweet => tweet.tweetBy._id === state._id);
   console.log(userPosts);
  
-  const followers = state.followers.map(follower => {
+  const followers = state.followers ? state.followers.map(follower => {
     return {
       id: follower._id,
       name: follower.name,
       handle: follower.userid,
-      followers: follower.followers.length,
-      profileImage: profilePic,
+      followers: follower.followers ? follower.followers.length : 0,
+      profileImage: follower.profilePictureUrl || profilePic,
     };
-  }
-  );
+  }) : [];
   
-  const following = state.following.map(following => {
+  const following = state.following ? state.following.map(following => {
     return {
       id: following._id,
       name: following.name,
       handle: following.userid,
-      followers: following.followers.length,
-      profileImage: profilePic,
+      followers: following.followers ? following.followers.length : 0,
+      profileImage: following.profilePictureUrl || profilePic,
     }
-  }
-  );
+  }) : [];
 
   const handleEditProfile = () => {
     setShowEditProfile(true);
@@ -210,13 +208,13 @@ const Profile = () => {
             <IoLocationOutline/> <pre> Earth </pre>
           </Stat>
           <Stat>
-            <SlCalender/><pre> Joined {formatDate(state.doj.toString())} </pre> 
+            <SlCalender/><pre> Joined {state.doj ? formatDate(state.doj.toString()) : ''} </pre> 
           </Stat>
           <Stat>
-            <strong> {state.following.length} </strong><pre> Following </pre>
+            <strong> {state.following ? state.following.length : 0} </strong><pre> Following </pre>
           </Stat>
           <Stat>
-            <strong>{state.followers.length} </strong> <pre> Followers </pre>
+            <strong>{state.followers ? state.followers.length : 0} </strong> <pre> Followers </pre>
           </Stat>
         </UserStats>
         <EditButton onClick={handleEditProfile}>Edit profile</EditButton>
