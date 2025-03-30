@@ -1,5 +1,6 @@
 /** @jsxImportSource react */
-import { useState, useContext, useEffect, useCallback } from 'react';
+import { useState, useContext, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import UserContext from '../context/userContext';
 import styled from 'styled-components';
 import { IoLocationOutline } from "react-icons/io5";
@@ -237,15 +238,27 @@ const RemoveButton = styled(FollowButton)`
   }
 `;
 
+const ProfileHeaderFollowButton = styled(FollowButton)`
+  position: absolute;
+  top: 12px;
+  right: 15px;
+`;
+
+const ProfileHeaderUnfollowButton = styled(UnfollowButton)`
+  position: absolute;
+  top: 12px;
+  right: 15px;
+`;
+
 const Profile = () => {
-  const contextValue = useContext(UserContext);
-  console.log('Debug: Raw contextValue in Profile:', contextValue);
+  const { userId: viewedUserHandle } = useParams();
+  const { state: currentUserState, dispatch, tweetState } = useContext(UserContext) || {};
 
-  useEffect(() => {
-    console.log('Debug - UserContext value in Profile (inside useEffect):', contextValue);
-  }, [contextValue]);
-
-  const { state, dispatch, tweetState } = contextValue || {};
+  const [profileData, setProfileData] = useState(null);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [profilePosts, setProfilePosts] = useState([]);
+  const [viewedFollowers, setViewedFollowers] = useState([]);
+  const [viewedFollowing, setViewedFollowing] = useState([]);
   
   const [activeTab, setActiveTab] = useState('posts');
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -254,79 +267,170 @@ const Profile = () => {
   const [imageType, setImageType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchFollowers = useCallback(async () => {
-    try {
-      const token = Cookie.get("accessToken");
-      if (!token) return;
-      const response = await axios.get(`${API_URL}/follow/followers`, { headers: { Authorization: `Bearer ${token}` } });
-      if (response.data && response.data.data) {
-        dispatch({ type: 'SET_FOLLOWERS', payload: response.data.data });
-      }
-    } catch (error) {
-      console.error("Error fetching followers:", error);
-      toast.error("Failed to fetch followers.");
-    }
-  }, [dispatch]);
-
-  const fetchFollowing = useCallback(async () => {
-    try {
-      const token = Cookie.get("accessToken");
-      if (!token) return;
-      const response = await axios.get(`${API_URL}/follow/following`, { headers: { Authorization: `Bearer ${token}` } });
-      if (response.data && response.data.data) {
-        dispatch({ type: 'SET_FOLLOWING', payload: response.data.data });
-      }
-    } catch (error) {
-      console.error("Error fetching following:", error);
-      toast.error("Failed to fetch following list.");
-    }
-  }, [dispatch]);
-
   useEffect(() => {
-    if (state && dispatch) {
-      fetchFollowers();
-      fetchFollowing();
-    }
-  }, [dispatch, fetchFollowers, fetchFollowing]);
+    const fetchProfileData = async () => {
+      console.log("Effect Start - Current User State:", currentUserState);
+      
+      // --- Own Profile (/profile) --- 
+      if (!viewedUserHandle) {
+        console.log("Viewing own profile (no URL param)");
+        // Check if context state has loaded the user ID
+        if (currentUserState?._id) { 
+          // Use existing context data
+          console.log("Setting own profile data from context");
+          setIsOwnProfile(true);
+          setProfileData(currentUserState);
+          setProfilePosts(currentUserState._id && tweetState ? tweetState.filter(tweet => tweet.tweetBy?._id === currentUserState._id) : []);
+          setViewedFollowers(currentUserState.followers || []);
+          setViewedFollowing(currentUserState.following || []);
+          setIsLoading(false); 
+        } else {
+          // Context not ready, fetch own profile data directly
+          console.log("Own profile - context not ready, fetching directly...");
+          setIsLoading(true); 
+          setProfileData(null); // Ensure no stale data shown
+          try {
+            const token = Cookie.get("accessToken");
+            if (!token) {
+              toast.error("Authentication error. Please log in.");
+              // Potentially redirect: window.location.href = "/";
+              setIsLoading(false);
+              return;
+            }
+            // Fetch own profile data
+            const response = await axios.get(`${API_URL}/profile`, { 
+              headers: { Authorization: `Bearer ${token}` } 
+            });
+            
+            const fetchedData = response.data.data; // Assuming direct user object
+            console.log("Fetched own profile data:", fetchedData);
 
-  const userPosts = state._id ? tweetState.filter(tweet => tweet.tweetBy?._id === state._id) : [];
+            if (fetchedData?._id) {
+              // Set local state for display
+              setProfileData(fetchedData);
+              setIsOwnProfile(true);
+              // TODO: Ensure fetchedData includes posts/followers/following or fetch separately
+              setProfilePosts(fetchedData.posts || []); 
+              setViewedFollowers(fetchedData.followers || []);
+              setViewedFollowing(fetchedData.following || []);
+              
+              // ALSO update the global context state
+              if (dispatch) {
+                console.log("Dispatching LOGIN action with fetched data");
+                dispatch({ type: 'LOGIN', payload: fetchedData });
+              }
+            } else {
+              toast.error("Failed to fetch valid profile data.");
+              setProfileData(null);
+            }
+          } catch (error) {
+            console.error("Error fetching own profile data:", error);
+            toast.error("Failed to load profile.");
+            setProfileData(null);
+          } finally {
+            setIsLoading(false);
+          }
+        }
+      // --- Other User Profile (/profile/:userId) --- 
+      } else {
+        console.log(`Viewing profile for: ${viewedUserHandle}`);
+        setIsLoading(true);
+        setProfileData(null); 
+        // ... (reset posts/followers/following state) ...
+        try {
+          const token = Cookie.get("accessToken");
+          if (!token) { 
+            toast.error("Authentication required to view profiles."); 
+            setIsLoading(false);
+            return; 
+          }
+          
+          console.log(`Fetching data from: ${API_URL}/profile/${viewedUserHandle}`);
+          const response = await axios.get(`${API_URL}/profile/${viewedUserHandle}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          const fetchedData = response.data.data; 
+          console.log("Received profile data:", fetchedData);
+          
+          if (!fetchedData || !fetchedData._id) {
+            toast.error("User profile not found.");
+            setProfileData(null);
+          } else {
+            setProfileData(fetchedData);
+            setIsOwnProfile(fetchedData._id === currentUserState?._id);
+            
+            setProfilePosts(fetchedData.posts || []);
+            setViewedFollowers(fetchedData.followers || []);
+            setViewedFollowing(fetchedData.following || []);
+          }
+
+        } catch (error) {
+          console.error("Error fetching profile data:", error);
+          toast.error(error.response?.data?.message || "Failed to load profile.");
+          setProfileData(null);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchProfileData();
+    
+  // Add dispatch to dependency array
+  }, [viewedUserHandle, currentUserState?._id, tweetState, dispatch]); 
+
+  const displayUser = profileData;
+  const profileImage = displayUser?.profilePictureUrl || profilePlaceholder;
+  const bannerImage = displayUser?.bannerPictureUrl || bannerPlaceholder;
+
+  // Log the raw data just before mapping
+  console.log("DEBUG - viewedFollowers before mapping:", JSON.stringify(viewedFollowers, null, 2));
   
-  const profileImage = state.profilePictureUrl || profilePlaceholder;
-  const bannerImage = state.bannerPictureUrl || bannerPlaceholder;
+  // Filter out falsy values AND ensure necessary properties exist inside map
+  const followersList = Array.isArray(viewedFollowers)
+    ? viewedFollowers
+        .filter(Boolean) // Remove null/undefined entries first
+        .map(user => {
+          // Check if user object and essential fields exist
+          if (user && user._id && user.userid && user.name) {
+            return {
+              id: user._id,
+              name: user.name,
+              handle: user.userid,
+              profileImage: user.profilePictureUrl || profilePlaceholder,
+            };
+          } 
+          console.warn("DEBUG - Invalid follower entry skipped:", user); // Log invalid entries
+          return null; // Map invalid entries to null
+        })
+        .filter(Boolean) // Filter out the nulls created from invalid entries
+    : [];
 
-  console.log('Debug - Profile State:', { 
-    profilePictureUrl: state.profilePictureUrl,
-    bannerPictureUrl: state.bannerPictureUrl,
-    usingDefault: !state.profilePictureUrl,
-    profileImage,
-    bannerImage
-  });
-  console.log("Context 'state.followers' before map:", state?.followers);
-  const followersList = Array.isArray(state?.followers) ? state.followers.map(user => ({
-    id: user._id,
-    name: user.name,
-    handle: user.userid,
-    profileImage: user.profilePictureUrl || profilePlaceholder,
-  })) : [];
+  // Log the raw data just before mapping
+  console.log("DEBUG - viewedFollowing before mapping:", JSON.stringify(viewedFollowing, null, 2));
 
-  console.log("Context 'state.following' before map:", state?.following);
-  const followingList = Array.isArray(state?.following) ? state.following.map(user => ({
-    id: user.userid,
-    name: user.name,
-    handle: user.userid,
-    profileImage: user.profilePictureUrl || profilePlaceholder,
-  })) : [];
+  // Apply the same robust filtering/mapping to followingList
+  const followingList = Array.isArray(viewedFollowing)
+    ? viewedFollowing
+        .filter(Boolean)
+        .map(user => {
+          if (user && user._id && user.userid && user.name) {
+            return {
+              id: user._id, 
+              name: user.name,
+              handle: user.userid,
+              profileImage: user.profilePictureUrl || profilePlaceholder,
+            };
+          }
+          console.warn("DEBUG - Invalid following entry skipped:", user); // Log invalid entries
+          return null;
+        })
+        .filter(Boolean)
+    : [];
 
-  console.log("Mapped 'followingList':", followingList);
-  console.log("Mapped 'followersList':", followersList);
-
-  const handleEditProfile = () => {
-    setShowEditProfile(true);
-  };
-
-  const handleCloseEditPopover = () => {
-    setShowEditProfile(false);
-  };
+  const handleEditProfile = () => setShowEditProfile(true);
+  const handleCloseEditPopover = () => setShowEditProfile(false);
   
   const openImagePopover = (imageUrl, type) => {
     setPopoverImageUrl(imageUrl);
@@ -400,7 +504,7 @@ const Profile = () => {
   };
 
   const handleUnfollow = async (userIdToUnfollow) => {
-    console.log("Attempting to unfollow:", userIdToUnfollow);
+    console.log("Attempting to unfollow from list:", userIdToUnfollow);
     const token = Cookie.get("accessToken");
     if (!token) {
       toast.error("Authentication error. Please log in again.");
@@ -408,15 +512,14 @@ const Profile = () => {
     }
     try {
       setIsLoading(true);
-      const response = await axios.post(`${API_URL}/unfollow`, 
+      await axios.post(`${API_URL}/unfollow`, 
         { unfollowId: userIdToUnfollow }, 
         { headers: { Authorization: `Bearer ${token}` } } 
       );
-      toast.success(response.data || "Unfollowed successfully!");
-      fetchFollowing(); 
+      toast.success("Unfollowed successfully!");
     } catch (error) {
       console.error("Error unfollowing user:", error);
-      const errorMessage = error.response?.data || "Failed to unfollow user.";
+      const errorMessage = error.response?.data?.message || "Failed to unfollow user.";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -434,13 +537,10 @@ const Profile = () => {
     }
     try {
       setIsLoading(true);
-      // Use DELETE method for the corrected backend route
-      const response = await axios.get(`${API_URL}/follow/remove-follower/${followerUserId}`, { 
+      await axios.delete(`${API_URL}/follow/remove-follower/${followerUserId}`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
-      toast.success(response.data?.message || "Follower removed successfully.");
-      // Refetch the followers list to update UI
-      fetchFollowers(); 
+      toast.success("Follower removed successfully.");
     } catch (error) {
       console.error("Error removing follower:", error);
       const errorMessage = error.response?.data?.message || "Failed to remove follower.";
@@ -450,14 +550,55 @@ const Profile = () => {
     }
   };
 
+  const handleHeaderFollowToggle = async () => {
+    if (!profileData || isOwnProfile) return;
+    
+    const isCurrentlyFollowing = currentUserState?.following?.some(f => f._id === profileData._id);
+    const action = isCurrentlyFollowing ? 'unfollow' : 'follow';
+    const endpoint = action === 'follow' ? `${API_URL}/follow` : `${API_URL}/unfollow`;
+    const payload = action === 'follow' ? { followId: profileData.userid } : { unfollowId: profileData.userid };
+    const successActionType = action === 'follow' ? 'ADD_TO_FOLLOWING' : 'REMOVE_FROM_FOLLOWING';
+    const dispatchPayload = action === 'follow' ? profileData : profileData._id;
+
+    setIsLoading(true);
+    console.log(`Attempting to ${action}:`, profileData.userid);
+    try {
+      const token = Cookie.get("accessToken");
+      if (!token) { toast.error("Auth error"); return; }
+
+      await axios.post(endpoint, payload, { headers: { Authorization: `Bearer ${token}` } });
+      
+      if (dispatch) {
+        dispatch({ type: successActionType, payload: dispatchPayload });
+      }
+      toast.success(action === 'follow' ? `Followed ${profileData.name}` : `Unfollowed ${profileData.name}`);
+
+    } catch (error) {
+      console.error(`Error ${action}ing user:`, error);
+      toast.error(error.response?.data?.message || `Failed to ${action} user.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading && !profileData?._id) {
+    return <LoadingOverlay>Loading Profile...</LoadingOverlay>;
+  }
+
+  if (!isLoading && !profileData?._id) {
+    return <ProfileContainer><DataNotFound>Profile not found.</DataNotFound></ProfileContainer>;
+  }
+
+  const isViewingProfileFollowedByCurrentUser = currentUserState?.following?.some(f => f?._id === profileData?._id);
+
   return (
     <ProfileContainer>
-      {showEditProfile && <SignUpPopover onClose={handleCloseEditPopover} isEditMode={true} userData={state} />}
+      {isOwnProfile && showEditProfile && <SignUpPopover onClose={handleCloseEditPopover} isEditMode={true} userData={currentUserState} />}
       {showImagePopover && 
         <ProfileImagePopover 
           imageUrl={popoverImageUrl}
           onClose={closeImagePopover}
-          isCurrentUserProfile={true} 
+          isCurrentUserProfile={isOwnProfile}
           onUpload={handleUpload}
         />
       }
@@ -465,69 +606,87 @@ const Profile = () => {
       <ToastContainer theme="dark" />
       <Banner 
         src={bannerImage} 
-        onClick={() => openImagePopover(bannerImage, 'banner')} 
+        onClick={() => isOwnProfile && openImagePopover(bannerImage, 'banner')}
       />
+      {!isOwnProfile && (
+          isViewingProfileFollowedByCurrentUser ? 
+          <ProfileHeaderUnfollowButton onClick={handleHeaderFollowToggle}>Unfollow</ProfileHeaderUnfollowButton> : 
+          <ProfileHeaderFollowButton onClick={handleHeaderFollowToggle}>Follow</ProfileHeaderFollowButton>
+      )}
       <ProfileDetails>
-        <ImageContainer $isProfile onClick={() => openImagePopover(profileImage, 'profile')}>
+        <ImageContainer $isProfile onClick={() => isOwnProfile && openImagePopover(profileImage, 'profile')}>
           <ProfileImage src={profileImage} alt="Profile" />
         </ImageContainer>
-        <UserName>{state.name || 'User Name'}</UserName>
-        <UserHandle>@{state.userid || 'userid'}</UserHandle>
-        <UserBio>{state.bio || 'No bio available.'}</UserBio>
+        <UserName>{displayUser.name || 'User Name'}</UserName>
+        <UserHandle>@{displayUser.userid || 'userid'}</UserHandle>
+        <UserBio>{displayUser.bio || 'No bio available.'}</UserBio>
         <UserStats>
-          {state.location && (
-            <Stat>
-              <IoLocationOutline/> <pre> {state.location} </pre>
-            </Stat>
+          {displayUser.location && (
+            <Stat><IoLocationOutline/> <pre> {displayUser.location} </pre></Stat>
           )}
-          <Stat>
-            <SlCalender/><pre> Joined {state.doj ? formatDate(state.doj.toString()) : 'N/A'} </pre> 
-          </Stat>
-          <Stat>
-            <strong> {state.following?.length || 0} </strong><pre> Following </pre>
-          </Stat>
-          <Stat>
-            <strong>{state.followers?.length || 0} </strong> <pre> Followers </pre>
-          </Stat>
+          <Stat><SlCalender/><pre> Joined {displayUser.doj ? formatDate(displayUser.doj.toString()) : 'N/A'} </pre></Stat>
+          <Stat><strong> {viewedFollowing?.length || displayUser.following?.length || 0} </strong><pre> Following </pre></Stat>
+          <Stat><strong> {viewedFollowers?.length || displayUser.followers?.length || 0} </strong><pre> Followers </pre></Stat>
         </UserStats>
-        <EditButton onClick={handleEditProfile}>Edit profile</EditButton>
+        {isOwnProfile && <EditButton onClick={handleEditProfile}>Edit profile</EditButton>}
       </ProfileDetails>
       <TabContainer>
-        <Tab onClick={() => setActiveTab('posts')} $isActive={activeTab === 'posts'}>Posts <Tag>{userPosts?.length || 0}</Tag></Tab>
-        <Tab onClick={() => setActiveTab('followers')} $isActive={activeTab === 'followers'}>Followers <Tag>{state.followers?.length || 0}</Tag></Tab>
-        <Tab onClick={() => setActiveTab('following')} $isActive={activeTab === 'following'}>Following <Tag>{state.following?.length || 0}</Tag></Tab>
+        <Tab onClick={() => setActiveTab('posts')} $isActive={activeTab === 'posts'}>Posts <Tag>{profilePosts?.length || 0}</Tag></Tab>
+        <Tab onClick={() => setActiveTab('followers')} $isActive={activeTab === 'followers'}>Followers <Tag>{viewedFollowers?.length || 0}</Tag></Tab>
+        <Tab onClick={() => setActiveTab('following')} $isActive={activeTab === 'following'}>Following <Tag>{viewedFollowing?.length || 0}</Tag></Tab>
       </TabContainer>
       <ContentSection>
-        {activeTab === 'posts' && (userPosts.length > 0 ? userPosts.map(post => (
-          <PostComponent key={post._id} post={{
-            id: post._id,
-            name: post.tweetBy?.name || 'Unknown User',
-            username: post.tweetBy?.userid || 'unknown',
-            date: formatDate(post.createdAt?.toString() || new Date().toISOString()),
-            content: post.tweet,
-            tweetBy: {
-              profilePictureUrl: post.tweetBy?.profilePictureUrl
-            }
-          }} />
-        )) : <DataNotFound>No posts yet</DataNotFound>)}
+        {/* Apply similar filtering and checks for posts */}
+        {activeTab === 'posts' && (() => {
+          const validPosts = Array.isArray(profilePosts)
+            ? profilePosts
+                .filter(Boolean)
+                .map(post => {
+                  // Check post and essential nested properties
+                  if (post && post._id && post.tweetBy && post.tweetBy._id && post.tweetBy.userid && post.tweetBy.name) {
+                    return (
+                      <PostComponent key={post._id} post={{
+                        id: post._id,
+                        name: post.tweetBy.name,
+                        username: post.tweetBy.userid,
+                        date: formatDate(post.createdAt?.toString() || new Date().toISOString()),
+                        content: post.tweet,
+                        tweetBy: {
+                          _id: post.tweetBy._id, // Pass ID if needed by PostComponent
+                          profilePictureUrl: post.tweetBy.profilePictureUrl
+                        }
+                      }} />
+                    );
+                  } 
+                  return null; // Map invalid posts to null
+                })
+                .filter(Boolean)
+            : [];
+            
+          return validPosts.length > 0 ? validPosts : <DataNotFound>No posts yet</DataNotFound>;
+        })()}
+        
+        {/* Use the filtered followersList */} 
         {activeTab === 'followers' && (followersList.length > 0 ? followersList.map(user => (
-          <UserCard key={user.id}>
+          <UserCard key={user.id}> 
             <ProfileImage src={user.profileImage} alt="Profile" />
             <UserCardDetails>
               <UserName>{user.name}</UserName>
               <UserHandle>@{user.handle}</UserHandle>
             </UserCardDetails>
-            <RemoveButton onClick={() => handleRemoveFollower(user.id)}>Remove</RemoveButton>
+            {isOwnProfile && <RemoveButton onClick={() => handleRemoveFollower(user.id)}>Remove</RemoveButton>}
           </UserCard>
         )) : <DataNotFound>No followers</DataNotFound>)}
+        
+        {/* Use the filtered followingList */} 
         {activeTab === 'following' && (followingList.length > 0 ? followingList.map(user => (
-          <UserCard key={user.id}>
+          <UserCard key={user.id}> 
             <ProfileImage src={user.profileImage} alt="Profile" />
             <UserCardDetails>
               <UserName>{user.name}</UserName>
               <UserHandle>@{user.handle}</UserHandle>
             </UserCardDetails>
-            <UnfollowButton onClick={() => handleUnfollow(user.id)}>Unfollow</UnfollowButton>
+            {isOwnProfile && <UnfollowButton onClick={() => handleUnfollow(user.id)}>Unfollow</UnfollowButton>}
           </UserCard>
         )) : <DataNotFound>No following</DataNotFound>)}
       </ContentSection>

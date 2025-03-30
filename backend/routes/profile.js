@@ -33,7 +33,6 @@ router.get("/search", verifyToken, async (req, res) => {
       // Optionally exclude the current user from search results
       // _id: { $ne: req.user._id } 
     })
-    .limit(10) // Limit results for performance
     .select("_id userid name profilePictureUrl"); // Select only needed fields
 
     successResponse(res, users, 200);
@@ -58,17 +57,16 @@ router.post(
   uploadBannerPicture
 );
 
-// --- Define dynamic routes LAST --- 
 
 // Get specific user profile by ID
-router.get("/:id", verifyToken, async (req, res) => {
+router.get("/:userId", verifyToken, async (req, res) => {
   try {
     // Ensure the id is a valid ObjectId before querying if needed
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return errorResponse(res, "Invalid user ID format", 400);
+    if (!req.params.userId) {
+        return errorResponse(res, "Invalid user userid format", 400);
     }
     
-    const user = await User.findOne({ _id: req.params.id })
+    const user = await User.findOne({ userid: req.params.userId })
       .select("-password -accessToken") // Exclude sensitive fields
       .populate("followers", "_id userid name profilePictureUrl") // Populate necessary fields
       .populate("following", "_id userid name profilePictureUrl");
@@ -83,6 +81,8 @@ router.get("/:id", verifyToken, async (req, res) => {
     errorResponse(res, "Internal Server Error", 500);
   }
 });
+
+
 
 // Update own profile (assuming this updates the logged-in user)
 router.put("/", verifyToken, updateProfile);

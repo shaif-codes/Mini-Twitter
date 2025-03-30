@@ -7,6 +7,7 @@ import Cookie from 'js-cookie';
 import { toast, ToastContainer } from 'react-toastify';
 import PostComponent from './PostComponent';
 import formatDate from '../hooks/formatDate';
+import { Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -170,6 +171,12 @@ const LoadingOverlay = styled.div`
   z-index: 1000;
 `;
 
+const StyledLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+  display: block;
+`;
+
 const Explore = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('people');
@@ -314,10 +321,11 @@ const Explore = () => {
       const response = await axios.post(`${API_URL}/follow`, {followId: userIdToFollow}, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      toast.success("Followed user successfully.");
       console.log("Follow response:", response.data);
     } catch (error) {
       console.error("Error following user:", error);
-      toast.error("Failed to follow user.");
+      toast.error(error.response.data.message);
     } finally {
       setIsLoading(false);
     }
@@ -363,22 +371,34 @@ const Explore = () => {
         {activeTab === 'people' && (
           <> 
             {filteredUsers.length > 0 ? filteredUsers.map(user => (
-              <UserCard key={user.id}>
-                <ProfileImage src={user.profileImage || profilePlaceholder} alt="Profile" />
-                <UserDetails>
-                  <UserName>{user.name}</UserName>
-                  <UserHandle>@{user.handle}</UserHandle>
-                </UserDetails>
-                {isFollowing(user.id) ? (
-                  <UnfollowButton onClick={() => handleUnfollow(user.id)}>
-                    Unfollow
-                  </UnfollowButton>
-                ) : (
-                  <FollowButton onClick={() => handleFollow(user.handle)}>
-                    Follow
-                  </FollowButton>
-                )}
-              </UserCard>
+              <StyledLink to={`/profile/${user.handle}`} key={user.id}> 
+                <UserCard> 
+                  <ProfileImage src={user.profileImage || profilePlaceholder} alt="Profile" />
+                  <UserDetails>
+                    <UserName>{user.name}</UserName>
+                    <UserHandle>@{user.handle}</UserHandle>
+                  </UserDetails>
+                  {isFollowing(user.id) ? (
+                    <UnfollowButton 
+                      onClick={(e) => { 
+                        e.preventDefault();
+                        handleUnfollow(user.id);
+                      }}
+                    >
+                      Unfollow
+                    </UnfollowButton>
+                  ) : (
+                    <FollowButton 
+                      onClick={(e) => { 
+                        e.preventDefault();
+                        handleFollow(user.handle);
+                      }}
+                    >
+                      Follow
+                    </FollowButton>
+                  )}
+                </UserCard>
+              </StyledLink>
             )) : (
               <DataNotFound>{searchTerm ? 'No people found' : 'No user suggestions'}</DataNotFound>
             )}

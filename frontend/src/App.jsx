@@ -8,6 +8,7 @@ import HomePage from './components/HomePage';
 import CreatePostPopover from './components/CreatePostComponent';
 import Explore from './components/Explore';
 import Profile from './components/Profile';
+import MainContent from './components/MainContent';
 // import PracticeForm from './components/practiceForm';
 import UserContext from './context/userContext';
 import userReducer from './userReducer';
@@ -29,10 +30,14 @@ const App = () => {
         <GlobalStyles />
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<HomePage />}/>
-          <Route path="/createPost" element={<CreatePostPopover />}/>
-          <Route path="/explore" element={<Explore />}/>
-          <Route path="/profile" element={<Profile/>} />
+          {/* Route for logged-in user's own profile */}
+          <Route path="/profile" element={<HomePage Component={Profile}/>} />
+          {/* Dynamic route for viewing specific user profiles */}
+          <Route path="/profile/:userId" element={<HomePage Component={Profile}/>} /> 
+          <Route path="/home" element={<HomePage Component={MainContent}/>}/>
+          <Route path="/createPost" element={<CreatePostPopover />}/> 
+          <Route path="/explore" element={<HomePage Component={Explore}/>}/> 
+          {/* Ensure HomePage handles rendering the passed Component */}
         </Routes>
       </Router>
     </UserContext.Provider>

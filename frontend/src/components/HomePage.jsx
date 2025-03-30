@@ -1,13 +1,10 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import SideNav from './SideNav';
-import MainContent from './MainContent';
-import Explore from './Explore';
-import Profile from './Profile';
 import UserContext from '../context/userContext';
 import Cookie from 'js-cookie';
 import axios from 'axios';
-import CreatePostComponent from './CreatePostComponent';
+import PropTypes from 'prop-types';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -24,34 +21,40 @@ const AppContainer = styled.div`
   }
 `;
 
-const HomePage = () => {
-  const { dispatch, setTweetState } = useContext(UserContext);
+const MainArea = styled.div`
+  flex-grow: 1;
+  height: 100vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { 
+    display: none;
+  }
+`;
 
-  const [showHome, setShowHome] = useState(true);
-  const [showExplore, setShowExplore] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [showCreatePost, setShowCreatePost] = useState(false);
+const HomePage = ({ Component }) => {
+  const { dispatch } = useContext(UserContext);
 
   useEffect(() => {
     const token = Cookie.get("accessToken");
-    const userid = Cookie.get("userid");
 
     const fetchUserData = async (token) => {
       try {
         const response = await axios.get(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
-        if (response.status === 200 && response.data.data) {
-          dispatch({ type: 'LOGIN', payload: response.data.data });
+        if (response.status === 200 && response.data) {
+          dispatch({ type: 'LOGIN', payload: response.data });
         } else {
-          // console.error("Failed to fetch user data or invalid response format");
+          console.error("Login Error: Failed to fetch user data or invalid response format", response);
           window.location.href = "/";
         }
       } catch (err) {
-        // console.error("Error fetching user data:", err);
+        console.error("Login Error: Error fetching user data:", err);
         window.location.href = "/";
       }
     };
 
-    if (token === undefined || userid === undefined) {
+    if (!token) {
       window.location.href = "/";
     } else {
       fetchUserData(token);
@@ -60,17 +63,16 @@ const HomePage = () => {
 
   return (
     <AppContainer>
-      <SideNav toggleCtrl={
-        {
-          home: [showHome, setShowHome], 
-          explore:[showExplore, setShowExplore], 
-          profile: [showProfile, setShowProfile]
-        }} />
-        {showHome && <MainContent />}
-        {showExplore && <Explore/>}
-        {showProfile && <Profile/>}
+      <SideNav />
+      <MainArea>
+        {Component ? <Component /> : <div>Loading...</div>}
+      </MainArea>
     </AppContainer>
   );
+};
+
+HomePage.propTypes = {
+  Component: PropTypes.elementType.isRequired,
 };
 
 export default HomePage;
