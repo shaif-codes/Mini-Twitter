@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import logo from '../assets/images/logo.png';
 import AuthButton from './AuthButton';
 import SignUpPopover from './SignUpPopover';
 import LoginPopover from './loginPopover';
-import UserState from '../context/UserState';
 
 const Container = styled.div`
   display: flex;
@@ -113,27 +112,25 @@ const LandingPage = () => {
   };
 
   return (
-    <UserState>
-      <Container>
-        <LeftSide>
-          <Logo src={logo} alt="Logo" />
-        </LeftSide>
-        <RightSide>
-          <Heading>Happening now</Heading>
-          <Subheading>Join today.</Subheading>
-          <FormContainer>
-            <AuthButton onClick={handleShowSignUp} primary>Create account</AuthButton>
-            <Message>
-              By signing up, you agree to the <Blue href="https://x.com/en/tos">Terms of Service</Blue> and <Blue href="https://x.com/en/privacy">Privacy Policy</Blue>, including <Blue href="https://help.x.com/en/rules-and-policies/x-cookies">Cookie Use.</Blue>
-            </Message>
-            <Text>Already have an account?</Text>
-            <AuthButton onClick={handleShowLogin}>Sign in</AuthButton>
-          </FormContainer>
-          {showSignUp && <SignUpPopover onClose={handleCloseSignUp} />}
-          {showLogin && <LoginPopover onClose={handleCloseLogin} onToggle={handleTogglePopover} />}
-        </RightSide>
-      </Container>
-    </UserState>
+    <Container>
+      <LeftSide>
+        <Logo src={logo} alt="Logo" />
+      </LeftSide>
+      <RightSide>
+        <Heading>Happening now</Heading>
+        <Subheading>Join today.</Subheading>
+        <FormContainer>
+          <AuthButton onClick={handleShowSignUp} primary>Create account</AuthButton>
+          <Message>
+            By signing up, you agree to the <Blue href="https://x.com/en/tos">Terms of Service</Blue> and <Blue href="https://x.com/en/privacy">Privacy Policy</Blue>, including <Blue href="https://help.x.com/en/rules-and-policies/x-cookies">Cookie Use.</Blue>
+          </Message>
+          <Text>Already have an account?</Text>
+          <AuthButton onClick={handleShowLogin}>Sign in</AuthButton>
+        </FormContainer>
+        {showSignUp && <SignUpPopover onClose={handleCloseSignUp} />}
+        {showLogin && <LoginPopover onClose={handleCloseLogin} onToggle={handleTogglePopover} />}
+      </RightSide>
+    </Container>
   );
 };
 

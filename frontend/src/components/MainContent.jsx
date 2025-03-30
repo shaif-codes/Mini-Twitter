@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
-import profile from '../assets/images/sampleProfile.png';
+import profilePlaceholder from '../assets/images/sampleProfile.png';
 import PostComponent from './PostComponent';
 import UserContext from '../context/userContext';
 import Cookie from 'js-cookie';
@@ -141,30 +141,23 @@ const PostButton = styled.button`
   }
 `;
 
-const Post = styled.div`
-  background-color: black;
-  padding: 15px;
-  border: 1px solid #253341;
-
-  @media (max-width: 768px) {
-    padding: 10px;
-  }
-`;
-
 const MainContent = () => {
   const [text, setText] = useState('');
   const textAreaRef = React.useRef(null);
+  const { state, setTweetState } = useContext(UserContext);
+
+  const userProfileImage = state?.profilePictureUrl || profilePlaceholder;
 
   useEffect(() => {
     const textArea = textAreaRef.current;
-    textArea.style.height = 'auto';
-    textArea.style.height = textArea.scrollHeight + 'px';
+    if (textArea) {
+      textArea.style.height = 'auto';
+      textArea.style.height = textArea.scrollHeight + 'px';
+    }
   }, [text]);
 
   const [tweets, setTweets] = useState([]);
-  const { tweetState, setTweetState } = useContext(UserContext);
-
-  const token = Cookie.get('accessToken'); // Get token from cookie
+  const token = Cookie.get('accessToken');
 
   const handlePostButton = async ()=>{
     try{
@@ -187,6 +180,7 @@ const MainContent = () => {
 
   useEffect(() => {
     const fetchTweets = async () => {
+      if (!token) return;
       try {
         const response = await axios.get(`${API_URL}/tweet`, { headers: { Authorization: `Bearer ${token}` } });
         if (response.data) {
@@ -194,11 +188,11 @@ const MainContent = () => {
           setTweetState(response.data);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching tweets:", error);
       }
     };
     fetchTweets();
-  }, [tweets]);
+  }, [token, setTweetState]);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
@@ -208,7 +202,7 @@ const MainContent = () => {
     <ContentContainer>
       <PostSection>
         <ProfileAndInputContainer>
-          <ProfileImage src={profile} />
+          <ProfileImage src={userProfileImage} alt="Profile" />
           <InputAndButtonContainer>
           <PostInput
             ref={textAreaRef}
@@ -226,10 +220,13 @@ const MainContent = () => {
           key={post._id}
           post={{
             id: post._id,
-            name: post.tweetBy.name,
-            username: post.tweetBy.userid,
-            date: formatDate(post.createdAt.toString()),
+            name: post.tweetBy?.name || 'Unknown User',
+            username: post.tweetBy?.userid || 'unknown',
+            date: formatDate(post.createdAt?.toString() || new Date().toISOString()),
             content: post.tweet,
+            tweetBy: {
+                profilePictureUrl: post.tweetBy?.profilePictureUrl
+            }
           }}
         />
       ))}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import styled from 'styled-components';
 import SideNav from './SideNav';
 import MainContent from './MainContent';
@@ -25,11 +25,8 @@ const AppContainer = styled.div`
 `;
 
 const HomePage = () => {
-  const [state, setState] = useState({});
+  const { dispatch, setTweetState } = useContext(UserContext);
 
-  const [tweetState, setTweetState] = useState([]);
-
-  //states for toggling between the different components
   const [showHome, setShowHome] = useState(true);
   const [showExplore, setShowExplore] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -42,39 +39,37 @@ const HomePage = () => {
     const fetchUserData = async (token) => {
       try {
         const response = await axios.get(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
-        if (response.status === 200) {
-          setState(response.data.data);
+        if (response.status === 200 && response.data.data) {
+          dispatch({ type: 'LOGIN', payload: response.data.data });
+        } else {
+          // console.error("Failed to fetch user data or invalid response format");
+          window.location.href = "/";
         }
       } catch (err) {
-        console.log(err);
+        // console.error("Error fetching user data:", err);
+        window.location.href = "/";
       }
     };
 
     if (token === undefined || userid === undefined) {
-      // console.log("redirecting to login");
-      window.location.href = "/";  // Redirect to login page
+      window.location.href = "/";
     } else {
       fetchUserData(token);
     }
-  }, [setState]);
-
-  
+  }, [dispatch]);
 
   return (
-    <UserContext.Provider value={{ state, setState, tweetState, setTweetState }}>
-      <AppContainer>
-        <SideNav toggleCtrl={
-          {
-            home: [showHome, setShowHome], 
-            explore:[showExplore, setShowExplore], 
-            profile: [showProfile, setShowProfile]
-            }} />
-            {showHome && <MainContent />}
-            {showExplore && <Explore/>}
-            {showProfile && <Profile/>}
-      </AppContainer>
-      {showCreatePost && <CreatePostComponent/>}
-    </UserContext.Provider>
+    <AppContainer>
+      <SideNav toggleCtrl={
+        {
+          home: [showHome, setShowHome], 
+          explore:[showExplore, setShowExplore], 
+          profile: [showProfile, setShowProfile]
+        }} />
+        {showHome && <MainContent />}
+        {showExplore && <Explore/>}
+        {showProfile && <Profile/>}
+    </AppContainer>
   );
 };
 

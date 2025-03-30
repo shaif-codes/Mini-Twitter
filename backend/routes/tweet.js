@@ -46,6 +46,37 @@ router.post("/create", async (req, res) => {
     }
 });
 
+// Search tweets
+router.get("/search", async (req, res) => {
+    try {
+        const { searchTerm } = req.query;
+        if (!searchTerm) {
+            // Return empty array or perhaps recent tweets if no term?
+            return res.status(200).json([]); 
+        }
+
+        // Use $regex for case-insensitive search within the tweet content
+        const searchPattern = new RegExp(searchTerm, 'i'); 
+
+        const tweets = await Tweet.find({
+            tweet: { $regex: searchPattern } 
+            // You could add searching user details here too if needed:
+            // $or: [ 
+            //   { tweet: { $regex: searchPattern } },
+            //   { 'tweetBy.name': { $regex: searchPattern } }, // Requires populating first or separate query
+            // ]
+        })
+        .populate("tweetBy", "_id userid name profilePictureUrl") // Populate user details
+        .sort({ createdAt: -1 }) // Optional: sort by most recent
+        .limit(20); // Optional: limit results
+
+        res.status(200).json(tweets);
+    } catch (error) {
+        console.error("Error searching tweets:", error);
+        res.status(500).send(error.message || "Internal Server Error during tweet search");
+    }
+});
+
 //get a single tweet by id
 router.get("/:tweetId", async (req, res) => {
     try {
@@ -97,6 +128,10 @@ router.post('/edit', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+
+
+
 
 
 

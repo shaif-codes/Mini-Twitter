@@ -6,7 +6,7 @@ const multer = require('multer'); // Need multer to check for MulterError
 exports.getProfile = async (req, res) => {
   try {
     // User ID is attached to req.user by the authMiddleware
-    const user = await User.findById(req.user._id).select('-password'); // Exclude password
+    const user = await User.findById(req.user._id).select('-password -accessToken'); // Exclude password
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

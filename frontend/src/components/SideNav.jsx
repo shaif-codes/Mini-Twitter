@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { FaHome, FaUser, FaSearch } from 'react-icons/fa';
 import { IoMdCreate } from 'react-icons/io';
 import logo from '../assets/images/logo.png';
-import profile from '../assets/images/sampleProfile.png';
+import profilePlaceholder from '../assets/images/sampleProfile.png';
 import UserContext from '../context/userContext';
 import PropTypes from 'prop-types';
 const NavContainer = styled.div`
@@ -157,6 +157,8 @@ const SideNav = ({ toggleCtrl }) => {
   const { state } = useContext(UserContext);
   const [activeItem, setActiveItem] = useState('/home');
 
+  const userProfileImage = state?.profilePictureUrl || profilePlaceholder;
+
   const handleToggleComponent = (ele) => {
     setActiveItem(ele);
 
@@ -206,13 +208,13 @@ const SideNav = ({ toggleCtrl }) => {
           <NavText>Post</NavText>
         </PostButton>
       </div>
-      <ProfileSection>
-        <ProfileImage src={profile} alt="profile" />
+      <ProfileSection onClick={() => handleToggleComponent('/profile')}>
+        <ProfileImage src={userProfileImage} alt="profile" />
         <ProfileDetails>
-          <ProfileName>{state.name}</ProfileName>
-          <ProfileId>@{state.userid}</ProfileId>
+          <ProfileName>{state?.name || 'User Name'}</ProfileName>
+          <ProfileId>@{state?.userid || 'username'}</ProfileId>
         </ProfileDetails>
-        <MoreButton style={{ fontWeight: '35px', fontSize: '25px', margin: '0px', marginLeft: '30px' }}>...</MoreButton>
+        <MoreButton>...</MoreButton>
       </ProfileSection>
     </NavContainer>
   );

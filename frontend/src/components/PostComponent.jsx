@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaHeart, FaComment } from "react-icons/fa";
-import profile from "../assets/images/sampleProfile.png";
+import profilePlaceholder from "../assets/images/sampleProfile.png";
 import PropTypes from "prop-types";
 import axios from "axios";
 import Cookie from "js-cookie";
@@ -213,11 +213,14 @@ const PostComponent = ({ post }) => {
   const [newComment, setNewComment] = useState("");
   const [likeCount, setLikeCount] = useState(0);
   const token = Cookie.get("accessToken");
+
+  // Add profile image URL from post data, fallback to placeholder
+  const authorProfileImage = post.tweetBy?.profilePictureUrl || profilePlaceholder;
+
   useEffect(() => {
     // Fetch initial like status and count
     fetchLikeStatus();
     // Fetch comments if they're shown
-
     fetchComments();
   }, [post.id]);
 
@@ -227,7 +230,7 @@ const PostComponent = ({ post }) => {
         `${API_URL}/likeCount/likeCount/${post.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log(response.data);
+      // console.log(response.data);
       setLiked(response.data.liked);
       setLikeCount(response.data.count);
     } catch (error) {
@@ -242,16 +245,16 @@ const PostComponent = ({ post }) => {
       });
       setComments(response.data.data);
     } catch (error) {
-      console.error("Error fetching comments:", error);
+      // console.error("Error fetching comments:", error);
     }
   };
 
   const handleLike = async () => {
-    console.log("handleLike called");
+    // console.log("handleLike called");
     try {
       const endpoint = liked ? "/likeCount/unlike" : "/likeCount/like";
       const token = Cookie.get("accessToken");
-      console.log({ endpoint, token, postId: post.id });
+      // console.log({ endpoint, token, postId: post.id });
       await axios.post(
         `${API_URL}${endpoint}`,
         { tweetId: post.id },
@@ -260,7 +263,7 @@ const PostComponent = ({ post }) => {
       setLiked(!liked);
       setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
     } catch (error) {
-      console.error("Error updating like:", error);
+      // console.error("Error updating like:", error);
     }
   };
 
@@ -294,11 +297,11 @@ const PostComponent = ({ post }) => {
   return (
     <PostContainer>
       <ProfileDetails>
-        <ProfileImage src={profile} alt="Profile" />
+        <ProfileImage src={authorProfileImage} alt="Profile" />
         <UserInfo>
           <UserName>{post.name}</UserName>
           <UserHandle>@{post.username}</UserHandle>
-          <PostDate>{post.date}</PostDate>
+          <PostDate>· {post.date}</PostDate>
         </UserInfo>
       </ProfileDetails>
       <PostContent>{post.content}</PostContent>
@@ -346,8 +349,11 @@ PostComponent.propTypes = {
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     username: PropTypes.string.isRequired,
-    content: PropTypes.string.isRequired,
     date: PropTypes.string.isRequired,
+    content: PropTypes.string.isRequired,
+    tweetBy: PropTypes.shape({
+      profilePictureUrl: PropTypes.string
+    })
   }).isRequired,
 };
 

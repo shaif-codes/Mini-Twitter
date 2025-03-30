@@ -10,6 +10,10 @@ router.post("/", async (req, res) => {
 
     try {
         const user1 = await user.findOne({_id: userId})
+        // check if the user is unfollowing itself
+        if (user1.userid === unfollowId) {
+            return res.status(400).send("You cannot unfollow yourself")
+        }
         const user2 = await user.findOne({userid: unfollowId})
         
         // console.log(user1, user2)

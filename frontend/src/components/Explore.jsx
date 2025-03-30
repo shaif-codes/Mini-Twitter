@@ -1,7 +1,14 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import styled from 'styled-components';
-import profile from '../assets/images/sampleProfile.png';
+import profilePlaceholder from '../assets/images/sampleProfile.png';
 import UserContext from '../context/userContext';
+import axios from 'axios';
+import Cookie from 'js-cookie';
+import { toast, ToastContainer } from 'react-toastify';
+import PostComponent from './PostComponent';
+import formatDate from '../hooks/formatDate';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ExploreContainer = styled.div`
   display: flex;
@@ -46,12 +53,6 @@ const SearchInput = styled.input`
   @media (max-width: 768px) {
     width: 100%;
   }
-`;
-
-const UsersContainer = styled.div`
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
 `;
 
 const UserCard = styled.div`
@@ -105,87 +106,292 @@ const FollowButton = styled.button`
   }
 `;
 
-const FollowerCount = styled.span`
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  color: white;
+const UnfollowButton = styled(FollowButton)`
+  background-color: red;
+  &:hover {
+      opacity: 0.9;
+  }
+`;
 
-  @media (max-width: 768px) {
-    display: none;
-  } 
+const TabContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 1px solid #253341;
+  margin-top: 20px;
+`;
+
+const Tab = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  padding: 15px;
+  cursor: pointer;
+  font-size: 16px;
+  flex-grow: 1;
+  text-align: center;
+  &:hover {
+    background-color: #253341;
+  }
+  &:focus {
+    outline: none;
+  }
+  border-bottom: ${(props) => (props.$isActive ? '4px solid #1a89d4' : 'none')};
+  border-radius: 0px;
+`;
+
+const ContentSection = styled.div`
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const DataNotFound = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 40px;
+  width: 100%;
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a89d4;
+`;
+
+const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 `;
 
 const Explore = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('people');
+  
+  const [allUsers, setAllUsers] = useState([]);
+  const [allTweets, setAllTweets] = useState([]);
+  
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [users, setUsers] = useState([]);
-  const { state } = useContext(UserContext);
-  // console.log(state);
+  const [filteredTweets, setFilteredTweets] = useState([]);
 
-  useEffect(() => {
-    // Fetch most followed users initially
-    fetchMostFollowedUsers();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { state: currentUserState } = useContext(UserContext);
+
+  const isFollowing = (userId) => {
+    return currentUserState?.following?.some(followedUser => followedUser.userid === userId);
+  };
+
+  const fetchExploreUsers = useCallback(async (currentSearchTerm) => {
+    if (!currentSearchTerm) {
+      setAllUsers([]);
+      setFilteredUsers([]);
+      return; 
+    }
+
+    setIsLoading(true);
+    console.log(`Fetching explore users for term: ${currentSearchTerm}`);
+    try {
+      const token = Cookie.get("accessToken");
+      if (!token) {
+        toast.error("Authentication error.");
+        setAllUsers([]); setFilteredUsers([]);
+        return;
+      }
+      const response = await axios.get(`${API_URL}/profile/search`, { 
+        headers: { Authorization: `Bearer ${token}` },
+        params: { searchTerm: currentSearchTerm }
+      });
+      
+      const usersData = response.data?.data?.map(user => ({
+        id: user._id,
+        name: user.name,
+        handle: user.userid,
+        profileImage: user.profilePictureUrl || profilePlaceholder,
+      })) || [];
+      
+      setAllUsers(usersData);
+      setFilteredUsers(usersData);
+    } catch (error) {
+      console.error("Error fetching explore users:", error);
+      toast.error("Failed to search users.");
+      setAllUsers([]);
+      setFilteredUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchExploreTweets = useCallback(async (currentSearchTerm) => {
+    if (!currentSearchTerm) {
+      setAllTweets([]);
+      setFilteredTweets([]);
+      return;
+    }
+    
+    setIsLoading(true);
+    console.log(`Fetching explore tweets for term: ${currentSearchTerm}`);
+    try {
+      const token = Cookie.get('accessToken'); 
+      if (!token) { 
+        toast.error("Authentication error.");
+        setAllTweets([]); setFilteredTweets([]);
+        return; 
+      }
+      
+      const response = await axios.get(`${API_URL}/tweet/search`, { 
+          headers: { Authorization: `Bearer ${token}` },
+          params: { searchTerm: currentSearchTerm }
+      });
+      
+      const tweetsData = response.data || [];
+      setAllTweets(tweetsData); 
+      setFilteredTweets(tweetsData);
+    } catch (error) {
+      console.error("Error fetching explore tweets:", error);
+      toast.error("Failed to search tweets.");
+      setAllTweets([]);
+      setFilteredTweets([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (searchTerm === '') {
-      setFilteredUsers(users);
-    } else {
-      const results = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.handle.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredUsers(results);
+    if (activeTab === 'people') {
+      fetchExploreUsers(searchTerm);
+    } else if (activeTab === 'tweets') {
+      fetchExploreTweets(searchTerm);
     }
-  }, [searchTerm, users]);
+  }, [activeTab, searchTerm, fetchExploreUsers, fetchExploreTweets]);
 
-  const fetchMostFollowedUsers = () => {
-    const mostFollowedUsers = state.following.map(following => {
-      return {
-        id: following._id,
-        name: following.name,
-        handle: following.userid,
-        followers: following.followers.length,
-        profileImage: profile,
-      };
-    });
-
-    mostFollowedUsers.sort((a, b) => b.followers - a.followers);
-    setUsers(mostFollowedUsers);
-    setFilteredUsers(mostFollowedUsers);
-  };
-
-  
+  useEffect(() => {
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    if (searchTerm === '') {
+      if (activeTab === 'people') {
+        setFilteredUsers(allUsers);
+      } else {
+        setFilteredTweets(allTweets);
+      }
+    } else {
+      if (activeTab === 'people') {
+        const results = allUsers.filter(user =>
+          user.name.toLowerCase().includes(lowerSearchTerm) || 
+          user.handle.toLowerCase().includes(lowerSearchTerm)
+        );
+        setFilteredUsers(results);
+      } else {
+        const results = allTweets.filter(tweet => 
+          tweet.tweet.toLowerCase().includes(lowerSearchTerm) || 
+          tweet.tweetBy?.name?.toLowerCase().includes(lowerSearchTerm) ||
+          tweet.tweetBy?.userid?.toLowerCase().includes(lowerSearchTerm)
+        );
+        setFilteredTweets(results);
+      }
+    }
+  }, [searchTerm, allUsers, allTweets, activeTab]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
 
+  const handleFollow = async (userIdToFollow) => {
+    setIsLoading(true);
+    console.log("Follow user:", userIdToFollow);
+    setIsLoading(false);
+    toast.info("Follow functionality not yet implemented.");
+  };
+
+  const handleUnfollow = async (userIdToUnfollow) => {
+    setIsLoading(true);
+    console.log("Unfollow user:", userIdToUnfollow);
+    setIsLoading(false);
+    toast.info("Unfollow functionality not yet implemented.");
+  };
+
   return (
     <ExploreContainer>
+      {isLoading && <LoadingOverlay>Loading...</LoadingOverlay>}
+      <ToastContainer theme="dark" />
+
       <SearchBarContainer>
         <SearchInput
           type="text"
-          placeholder="Try searching for people, lists, or keywords"
+          placeholder="Search People or Tweets"
           value={searchTerm}
           onChange={handleSearchChange}
         />
       </SearchBarContainer>
-      <UsersContainer>
-        {filteredUsers.map(user => (
-          <UserCard key={user.id}>
-            <ProfileImage src={user.profileImage} alt="Profile" />
-            <UserDetails>
-              <UserName>{user.name}</UserName>
-              <UserHandle>{user.handle}</UserHandle>
-            </UserDetails>
-            <FollowerCount>
-              {user.followers} <p style={{marginLeft: "10px"}}> Followers</p>
-            </FollowerCount>
-            <FollowButton style={{marginLeft: "10px"}}>Follow</FollowButton>
-          </UserCard>
-        ))}
-      </UsersContainer>
+
+      <TabContainer>
+        <Tab 
+          onClick={() => setActiveTab('people')} 
+          $isActive={activeTab === 'people'}
+        >
+          People
+        </Tab>
+        <Tab 
+          onClick={() => setActiveTab('tweets')} 
+          $isActive={activeTab === 'tweets'}
+        >
+          Tweets
+        </Tab>
+      </TabContainer>
+
+      <ContentSection>
+        {activeTab === 'people' && (
+          <> 
+            {filteredUsers.length > 0 ? filteredUsers.map(user => (
+              <UserCard key={user.id}>
+                <ProfileImage src={user.profileImage || profilePlaceholder} alt="Profile" />
+                <UserDetails>
+                  <UserName>{user.name}</UserName>
+                  <UserHandle>@{user.handle}</UserHandle>
+                </UserDetails>
+                {isFollowing(user.id) ? (
+                  <UnfollowButton onClick={() => handleUnfollow(user.id)}>
+                    Unfollow
+                  </UnfollowButton>
+                ) : (
+                  <FollowButton onClick={() => handleFollow(user.id)}>
+                    Follow
+                  </FollowButton>
+                )}
+              </UserCard>
+            )) : (
+              <DataNotFound>{searchTerm ? 'No people found' : 'No user suggestions'}</DataNotFound>
+            )}
+          </>
+        )}
+
+        {activeTab === 'tweets' && (
+          <> 
+            {filteredTweets.length > 0 ? filteredTweets.map(post => (
+              <PostComponent
+                key={post._id}
+                post={{
+                  id: post._id,
+                  name: post.tweetBy?.name || 'Unknown User',
+                  username: post.tweetBy?.userid || 'unknown',
+                  date: formatDate(post.createdAt?.toString() || new Date().toISOString()),
+                  content: post.tweet,
+                  tweetBy: {
+                    profilePictureUrl: post.tweetBy?.profilePictureUrl
+                  }
+                }}
+              />
+            )) : (
+              <DataNotFound>{searchTerm ? 'No tweets found' : 'No tweets to display'}</DataNotFound>
+            )}
+          </>
+        )}
+      </ContentSection>
     </ExploreContainer>
   );
 };

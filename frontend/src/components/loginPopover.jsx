@@ -155,7 +155,7 @@ const LoginPopover = ({ onClose, onToggle }) => {
   };
 
   const handleLogin = async () => {
-    console.log(formData.userid, formData.password);
+    // console.log(formData.userid, formData.password);
     try {
       const response = await axios.post(`${API_URL}/login`, { userid: formData.userid, password: formData.password });
       // console.log(response.data);
@@ -168,11 +168,11 @@ const LoginPopover = ({ onClose, onToggle }) => {
         // console.log(state);
         // rest logic we have to implement
       } else {
-        console.log('Invalid credentials');
+        // console.log('Invalid credentials');
         toast.error('Invalid credentials');
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error('Invalid credentials', {style: {background: "black", color: "white", borderRadius: "10px", padding: "10px"}});
     }
   };

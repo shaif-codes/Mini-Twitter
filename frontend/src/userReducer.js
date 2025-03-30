@@ -1,15 +1,22 @@
 const userReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
-      return action.payload;
+      return {
+        followers: [], 
+        following: [],
+        ...action.payload, 
+      };
     case 'LOGOUT':
-      return {};
-    case 'UPDATE_FOLLOWER':
+      return {
+        followers: [],
+        following: [],
+      };
+    case 'SET_FOLLOWERS':
       return {
         ...state,
         followers: action.payload
       };
-    case 'UPDATE_FOLLOWING':
+    case 'SET_FOLLOWING':
       return {
         ...state,
         following: action.payload
@@ -23,6 +30,11 @@ const userReducer = (state, action) => {
       return {
         ...state,
         bannerPictureUrl: action.payload
+      };
+    case 'UPDATE_USER_DETAILS':
+      return {
+        ...state,
+        ...action.payload
       };
     default:
       return state;
