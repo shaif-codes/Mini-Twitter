@@ -85,6 +85,11 @@ const UserName = styled.h1`
 const UserHandle = styled.p`
   color: gray;
   margin: 5px 0;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+    color: #1a89d4;
+  }
 `;
 
 const UserBio = styled.p`
@@ -140,11 +145,16 @@ const UserCard = styled.div`
   margin-bottom: 10px;
   background-color: #1a1a1a;
   border-radius: 10px;
+  cursor: pointer;
+  &:hover {
+    background-color: #253341;
+  }
 `;
 
 const UserCardDetails = styled.div`
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 `;
 
 const FollowButton = styled.button`
@@ -670,7 +680,7 @@ const Profile = () => {
         {activeTab === 'followers' && (followersList.length > 0 ? followersList.map(user => (
           <UserCard key={user.id}> 
             <ProfileImage src={user.profileImage} alt="Profile" />
-            <UserCardDetails>
+            <UserCardDetails onClick={() => window.location.href = `/profile/${user.handle}`}>
               <UserName>{user.name}</UserName>
               <UserHandle>@{user.handle}</UserHandle>
             </UserCardDetails>
@@ -680,9 +690,9 @@ const Profile = () => {
         
         {/* Use the filtered followingList */} 
         {activeTab === 'following' && (followingList.length > 0 ? followingList.map(user => (
-          <UserCard key={user.id}> 
+          <UserCard key={user.id} > 
             <ProfileImage src={user.profileImage} alt="Profile" />
-            <UserCardDetails>
+            <UserCardDetails onClick={() => window.location.href = `/profile/${user.handle}`}>
               <UserName>{user.name}</UserName>
               <UserHandle>@{user.handle}</UserHandle>
             </UserCardDetails>

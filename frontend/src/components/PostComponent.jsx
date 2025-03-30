@@ -51,6 +51,7 @@ const UserInfo = styled.div`
   flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
+  cursor: pointer;
 
   @media (max-width: 768px) {
     flex-direction: row;
@@ -71,7 +72,11 @@ const UserName = styled.span`
 const UserHandle = styled.span`
   color: gray;
   margin-left: 5px;
-
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+    color: #1a89d4;
+  }
   @media (max-width: 768px) {
     margin-left: 0;
     font-size: 12px;
@@ -298,7 +303,7 @@ const PostComponent = ({ post }) => {
     <PostContainer>
       <ProfileDetails>
         <ProfileImage src={authorProfileImage} alt="Profile" />
-        <UserInfo>
+        <UserInfo onClick={() => window.location.href = `/profile/${post.username}`}>
           <UserName>{post.name}</UserName>
           <UserHandle>@{post.username}</UserHandle>
           <PostDate>· {post.date}</PostDate>
