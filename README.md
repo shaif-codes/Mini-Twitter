@@ -103,18 +103,8 @@ cd Mini-Twitter
     ```bash
     npm install
     ```
-
-3. Create a .config file where you add API_URL:
-    ```
-    VITE_API_URL=http://localhost:5000
-    ```
-    or
-   ```
-   VITE_API_URL==<your_backend_server_url>
-    ```
    
-
-5. Start the frontend development server:
+4. Start the frontend development server:
 
     ```bash
     npm run dev
@@ -126,7 +116,7 @@ cd Mini-Twitter
 
 1. Open your browser and navigate to `http://localhost:5173`.
 2. Sign up for a new account or log in with an existing one.
-3. Explore the app by creating posts, following other users, and exploring trending topics.
+3. Explore the app by creating posts, following other users.
 
 ## Contributing
 
